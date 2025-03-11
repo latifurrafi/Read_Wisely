@@ -1,0 +1,362 @@
+[
+    {
+      "model": "reldemo.author",
+      "pk": 1,
+      "fields": {
+        "name": "James Patterson",
+        "bio": "James Patterson is an American author known for his thriller novels and collaborations with various co-authors."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 2,
+      "fields": {
+        "name": "J.K. Rowling",
+        "bio": "British author best known for creating the Harry Potter fantasy series."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 3,
+      "fields": {
+        "name": "Stephen King",
+        "bio": "American author of horror, supernatural fiction, suspense, crime, science-fiction, and fantasy novels."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 4,
+      "fields": {
+        "name": "Chimamanda Ngozi Adichie",
+        "bio": "Nigerian writer whose works range from novels to short stories to nonfiction."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 5,
+      "fields": {
+        "name": "Haruki Murakami",
+        "bio": "Japanese writer known for his surrealistic and dreamlike novels and short stories."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 6,
+      "fields": {
+        "name": "Margaret Atwood",
+        "bio": "Canadian poet, novelist, literary critic, essayist, teacher, environmental activist, and inventor."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 7,
+      "fields": {
+        "name": "Yuval Noah Harari",
+        "bio": "Israeli public intellectual, historian and professor known for his books on evolution and history."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 8,
+      "fields": {
+        "name": "Neil Gaiman",
+        "bio": "English author of short fiction, novels, comic books, graphic novels, nonfiction, audio theatre, and films."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 9,
+      "fields": {
+        "name": "Michelle Obama",
+        "bio": "American attorney and author who served as the First Lady of the United States from 2009 to 2017."
+      }
+    },
+    {
+      "model": "reldemo.author",
+      "pk": 10,
+      "fields": {
+        "name": "Tara Westover",
+        "bio": "American memoirist, essayist and historian known for her memoir Educated."
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 1,
+      "fields": {
+        "title": "The Midnight Club",
+        "year": "2022-05-15",
+        "isbn": "9781234567890",
+        "story": "A thrilling mystery set in a remote mountain lodge where five strangers become trapped during a snowstorm, only to discover that one of them is a killer.",
+        "page": "342",
+        "image_url": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e",
+        "pdf_file": "books_pdfs/midnight_club.pdf",
+        "author": [1]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 2,
+      "fields": {
+        "title": "Harry Potter and the Philosopher's Stone",
+        "year": "1997-06-26",
+        "isbn": "9780747532699",
+        "story": "The story of a young wizard who discovers his magical heritage on his eleventh birthday, when he receives a letter of acceptance to Hogwarts School of Witchcraft and Wizardry.",
+        "page": "223",
+        "image_url": "https://images.unsplash.com/photo-1551269901-5c5e14c25df7",
+        "pdf_file": "books_pdfs/harry_potter_1.pdf",
+        "author": [2]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 3,
+      "fields": {
+        "title": "The Shining",
+        "year": "1977-01-28",
+        "isbn": "9780385121675",
+        "story": "The story follows Jack Torrance, his wife Wendy, and their five-year-old son Danny, who move into the Overlook Hotel in the Colorado Rockies.",
+        "page": "447",
+        "image_url": "https://images.unsplash.com/photo-1535398089889-dd807df1dfaa",
+        "pdf_file": "books_pdfs/the_shining.pdf",
+        "author": [3]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 4,
+      "fields": {
+        "title": "Americanah",
+        "year": "2013-05-14",
+        "isbn": "9780307271082",
+        "story": "A story of a young Nigerian woman, Ifemelu, who immigrates to the United States to attend university.",
+        "page": "588",
+        "image_url": "https://images.unsplash.com/photo-1544947950-fa07a98d237f",
+        "pdf_file": "books_pdfs/americanah.pdf",
+        "author": [4]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 5,
+      "fields": {
+        "title": "Norwegian Wood",
+        "year": "1987-09-04",
+        "isbn": "9780375704024",
+        "story": "A nostalgic story of loss and burgeoning sexuality set in Tokyo during the late 1960s.",
+        "page": "296",
+        "image_url": "https://images.unsplash.com/photo-1542868727-819f12163c64",
+        "pdf_file": "books_pdfs/norwegian_wood.pdf",
+        "author": [5]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 6,
+      "fields": {
+        "title": "The Handmaid's Tale",
+        "year": "1985-06-01",
+        "isbn": "9780385490818",
+        "story": "Set in a near-future New England, in a totalitarian state resembling a theonomy that overthrows the United States government.",
+        "page": "311",
+        "image_url": "https://images.unsplash.com/photo-1576872381149-7847515ce5d8",
+        "pdf_file": "books_pdfs/handmaids_tale.pdf",
+        "author": [6]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 7,
+      "fields": {
+        "title": "Sapiens: A Brief History of Humankind",
+        "year": "2011-02-10",
+        "isbn": "9780062316097",
+        "story": "A book that explores the development of Homo sapiens from prehistoric times to the present day.",
+        "page": "443",
+        "image_url": "https://images.unsplash.com/photo-1511108690759-009324a90311",
+        "pdf_file": "books_pdfs/sapiens.pdf",
+        "author": [7]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 8,
+      "fields": {
+        "title": "American Gods",
+        "year": "2001-06-19",
+        "isbn": "9780380973651",
+        "story": "A blend of Americana, fantasy, and various strands of ancient and modern mythology.",
+        "page": "465",
+        "image_url": "https://images.unsplash.com/photo-1507842217343-583bb7270b66",
+        "pdf_file": "books_pdfs/american_gods.pdf",
+        "author": [8]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 9,
+      "fields": {
+        "title": "Becoming",
+        "year": "2018-11-13",
+        "isbn": "9781524763138",
+        "story": "A memoir by the former First Lady of the United States Michelle Obama.",
+        "page": "448",
+        "image_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
+        "pdf_file": "books_pdfs/becoming.pdf",
+        "author": [9]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 10,
+      "fields": {
+        "title": "Educated",
+        "year": "2018-02-20",
+        "isbn": "9780399590504",
+        "story": "A memoir about a young girl who, kept out of school, leaves her survivalist family and goes on to earn a PhD from Cambridge University.",
+        "page": "334",
+        "image_url": "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6",
+        "pdf_file": "books_pdfs/educated.pdf",
+        "author": [10]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 11,
+      "fields": {
+        "title": "Cross Fire",
+        "year": "2010-11-15",
+        "isbn": "9780316036177",
+        "story": "Detective Alex Cross faces his most terrifying opponent yet: a genius serial killer who targets his family.",
+        "page": "384",
+        "image_url": "https://images.unsplash.com/photo-1553617753-90071944012a",
+        "pdf_file": "books_pdfs/cross_fire.pdf",
+        "author": [1]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 12,
+      "fields": {
+        "title": "Harry Potter and the Chamber of Secrets",
+        "year": "1998-07-02",
+        "isbn": "9780747538486",
+        "story": "Harry's second year at Hogwarts is even more exciting and dangerous than his first, with a mysterious Chamber of Secrets being opened.",
+        "page": "251",
+        "image_url": "https://images.unsplash.com/photo-1541963463532-d68292c34b19",
+        "pdf_file": "books_pdfs/harry_potter_2.pdf",
+        "author": [2]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 13,
+      "fields": {
+        "title": "It",
+        "year": "1986-09-15",
+        "isbn": "9780670813025",
+        "story": "The story follows the experiences of seven children as they are terrorized by an evil entity that exploits the fears of its victims.",
+        "page": "1138",
+        "image_url": "https://images.unsplash.com/photo-1519682577862-22b62b24e493",
+        "pdf_file": "books_pdfs/it.pdf",
+        "author": [3]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 14,
+      "fields": {
+        "title": "Purple Hibiscus",
+        "year": "2003-10-30",
+        "isbn": "9781616202415",
+        "story": "A coming of age story set in postcolonial Nigeria during the military coup of the 1990s.",
+        "page": "307",
+        "image_url": "https://images.unsplash.com/photo-1515098506762-79007516ca19",
+        "pdf_file": "books_pdfs/purple_hibiscus.pdf",
+        "author": [4]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 15,
+      "fields": {
+        "title": "Kafka on the Shore",
+        "year": "2002-09-12",
+        "isbn": "9781400079278",
+        "story": "A metaphysical journey that blends dreams, myths, and reality with two intertwined narratives.",
+        "page": "505",
+        "image_url": "https://images.unsplash.com/photo-1518744386442-2d48ac47a7eb",
+        "pdf_file": "books_pdfs/kafka_shore.pdf",
+        "author": [5]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 16,
+      "fields": {
+        "title": "The Testaments",
+        "year": "2019-09-10",
+        "isbn": "9780385543781",
+        "story": "Set 15 years after the events of The Handmaid's Tale, the novel is narrated by Aunt Lydia, a character from the previous novel.",
+        "page": "419",
+        "image_url": "https://images.unsplash.com/photo-1474932430478-367dbb6832c1",
+        "pdf_file": "books_pdfs/testaments.pdf",
+        "author": [6]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 17,
+      "fields": {
+        "title": "Homo Deus: A Brief History of Tomorrow",
+        "year": "2015-09-11",
+        "isbn": "9780062464316",
+        "story": "An exploration of the dreams and nightmares that will shape the twenty-first century.",
+        "page": "450",
+        "image_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8",
+        "pdf_file": "books_pdfs/homo_deus.pdf",
+        "author": [7]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 18,
+      "fields": {
+        "title": "Neverwhere",
+        "year": "1996-09-16",
+        "isbn": "9780380973637",
+        "story": "The story of Richard Mayhew and his odyssey through London Below, a magical realm coexisting with the London we know.",
+        "page": "370",
+        "image_url": "https://images.unsplash.com/photo-1529473814998-077b4fec6770",
+        "pdf_file": "books_pdfs/neverwhere.pdf",
+        "author": [8]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 19,
+      "fields": {
+        "title": "The Light We Carry",
+        "year": "2022-11-15",
+        "isbn": "9780593237465",
+        "story": "Michelle Obama offers readers a series of fresh stories and insightful reflections on change, challenge, and power.",
+        "page": "336",
+        "image_url": "https://images.unsplash.com/photo-1589998059171-988d887df646",
+        "pdf_file": "books_pdfs/light_we_carry.pdf",
+        "author": [9]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 20,
+      "fields": {
+        "title": "Collaborative Fiction",
+        "year": "2023-07-20",
+        "isbn": "9781987654321",
+        "story": "A unique collaboration between Patterson and Gaiman, blending thriller elements with fantasy to create an unprecedented reading experience.",
+        "page": "412",
+        "image_url": "https://images.unsplash.com/photo-1495640388908-05b31e524696",
+        "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+        "author": [1, 8]
+      }
+    }
+  ]

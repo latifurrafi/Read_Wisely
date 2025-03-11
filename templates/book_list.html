@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Book List{% endblock %}
+{% block content %}
+<h1 class="text-center mb-4">Book List</h1>
+<div class="row">
+    {% for book in books %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <!-- Display image from URL if provided, else display uploaded image -->
+            {% if book.image_url %}
+            <img src="{{ book.image_url }}" alt="{{ book.title }}" class="card-img-top"
+                style="height: 250px; object-fit: cover;">
+            {% elif book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.title }}" class="card-img-top"
+                style="height: 250px; object-fit: cover;">
+            {% else %}
+            <img src="/static/default.jpg" alt="default" class="card-img-top" style="height: 250px; object-fit: cover;">
+            {% endif %}
+
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <h6 class="card-subtitle text-muted mb-2">
+                    {% for author in book.author.all %}
+                        {{ author.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Unknown Author
+                    {% endfor %}
+                    </h6>
+                <p class="card-text">{{ book.description|truncatechars:100 }}</p>
+                <p><strong>Published Year:</strong> {{ book.year }}</p>
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'update_book' book.id %}" class="btn btn-primary btn-sm">Update</a>
+                    <a href="{% url 'delete_book' book.id %}" class="btn btn-danger btn-sm">Delete</a>
+                    <a href="{% url 'book_detail' book.id %}" class="btn btn-info btn-sm">Read More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-center">No books available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

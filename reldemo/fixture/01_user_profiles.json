@@ -1,0 +1,85 @@
+[
+    {
+        "model" : "auth.user",
+        "pk" : 2,
+        "fields" : {
+            "username" : "Rafi_Arman",
+            "first_name" : "Rafi",
+            "last_name" : "Arman",
+            "email" : "admin@gmail.com",
+            "password": "qwer1234",
+            "is_active": true
+        }
+    },
+
+    {
+        "model" : "auth.user",
+        "pk" : 3,
+        "fields" : {
+            "username" : "Siam_Ahmed",
+            "first_name" : "Siam",
+            "last_name" : "Ahmed",
+            "email" : "adminand@gmail.com",
+            "password": "qwerrr44rr1234",
+            "is_active": true
+        }
+    },
+
+    {
+        "model" : "auth.user",
+        "pk" : 4,
+        "fields" : {
+            "username" : "Dhaka_Bangladesh",
+            "first_name" : "Dhaka",
+            "last_name" : "Bangladesh",
+            "email" : "adminadn@gmail.com",
+            "password": "qwerr44rrr1234",
+            "is_active": true
+        }
+    },
+
+    {
+        "model": "reldemo.profile",
+        "pk" : 1,
+        "fields" : {
+            "user": 1,
+            "bio": "A software develop who loves coding and building web applications",
+            "birth_date": "1990-01-01",
+            "location" : "New York"
+        }
+    },
+
+    {
+        "model": "reldemo.profile",
+        "pk": 2,
+        "fields": {
+            "user": 2,
+            "bio": "A cloud engineer working with AWS, Azure, and Kubernetes",
+            "birth_date": "1992-03-10",
+            "location": "Berlin"
+        }
+    },
+
+    {
+        "model": "reldemo.profile",
+        "pk": 3,
+        "fields": {
+            "user": 3,
+            "bio": "A data scientist passionate about AI and machine learning",
+            "birth_date": "1995-06-15",
+            "location": "San Francisco"
+        }
+    },
+
+    {
+        "model": "reldemo.profile",
+        "pk": 4,
+        "fields": {
+            "user": 4,
+            "bio": "A cybersecurity expert focused on ethical hacking and penetration testing",
+            "birth_date": "1988-09-25",
+            "location": "London"
+        }
+    }
+
+]

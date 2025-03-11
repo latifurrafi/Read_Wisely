@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="register-container">
+  <h2>Register</h2>
+  <form method="post" class="minimal-form">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <span class="error">{{ field.errors }}</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="minimal-button">Register</button>
+  </form>
+  <p class="login-link">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+</div>
+
+<style>
+  .register-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  h2 {
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .minimal-form .form-field {
+    margin-bottom: 1rem;
+  }
+  
+  .minimal-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .minimal-form input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .minimal-form input:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  .error {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    display: block;
+  }
+  
+  .minimal-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .minimal-button:hover {
+    background-color: #0069d9;
+  }
+  
+  .login-link {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .login-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}

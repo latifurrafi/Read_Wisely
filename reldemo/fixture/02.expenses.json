@@ -1,0 +1,309 @@
+[
+   
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 1,
+        "fields": {
+            "name": "Food",
+            "description": "Food And Dining Expenses"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 2,
+        "fields": {
+            "name": "Cha",
+            "description": "Feel Better For 24/7.."
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 3,
+        "fields": {
+            "name": "Transport",
+            "description": "Daily commute and travel expenses"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 4,
+        "fields": {
+            "name": "Entertainment",
+            "description": "Movies, concerts, and fun activities"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 5,
+        "fields": {
+            "name": "Healthcare",
+            "description": "Medical checkups and medicines"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 6,
+        "fields": {
+            "name": "Education",
+            "description": "Books, courses, and tuition fees"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 7,
+        "fields": {
+            "name": "Shopping",
+            "description": "Clothing, accessories, and personal items"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 8,
+        "fields": {
+            "name": "Utilities",
+            "description": "Electricity, water, and internet bills"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 9,
+        "fields": {
+            "name": "Savings",
+            "description": "Deposits and emergency funds"
+        }
+    },
+
+    {
+        "model": "reldemo.expensescategory",
+        "pk": 10,
+        "fields": {
+            "name": "Gifts",
+            "description": "Birthday, wedding, and celebration gifts"
+        }
+    },
+
+
+   
+
+    {
+        "model": "reldemo.expense",
+        "pk": 1,
+        "fields": {
+            "category": 1,
+            "amount": "24.33",
+            "date": "2021-02-14",
+            "description": "Launch at Italian Restaurant"
+        }
+    },
+
+    {
+        "model": "reldemo.expense",
+        "pk": 2,
+        "fields": {
+            "category": 1,
+            "amount": "12.50",
+            "date": "2021-02-15",
+            "description": "Breakfast at local cafe"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 3,
+        "fields": {
+            "category": 1,
+            "amount": "45.00",
+            "date": "2021-02-16",
+            "description": "Dinner with friends"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 4,
+        "fields": {
+            "category": 2,
+            "amount": "5.00",
+            "date": "2021-02-17",
+            "description": "Evening Cha at roadside stall"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 5,
+        "fields": {
+            "category": 3,
+            "amount": "10.75",
+            "date": "2021-02-18",
+            "description": "Bus fare to office"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 6,
+        "fields": {
+            "category": 3,
+            "amount": "30.00",
+            "date": "2021-02-19",
+            "description": "Cab fare to airport"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 7,
+        "fields": {
+            "category": 4,
+            "amount": "20.00",
+            "date": "2021-02-20",
+            "description": "Movie ticket for latest release"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 8,
+        "fields": {
+            "category": 5,
+            "amount": "60.00",
+            "date": "2021-02-21",
+            "description": "Doctor consultation"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 9,
+        "fields": {
+            "category": 5,
+            "amount": "15.50",
+            "date": "2021-02-22",
+            "description": "Medicine for cold"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 10,
+        "fields": {
+            "category": 6,
+            "amount": "120.00",
+            "date": "2021-02-23",
+            "description": "Online course subscription"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 11,
+        "fields": {
+            "category": 6,
+            "amount": "25.00",
+            "date": "2021-02-24",
+            "description": "Textbooks for university"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 12,
+        "fields": {
+            "category": 7,
+            "amount": "40.00",
+            "date": "2021-02-25",
+            "description": "New T-shirt and jeans"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 13,
+        "fields": {
+            "category": 8,
+            "amount": "50.00",
+            "date": "2021-02-26",
+            "description": "Electricity bill payment"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 14,
+        "fields": {
+            "category": 8,
+            "amount": "25.00",
+            "date": "2021-02-27",
+            "description": "Internet bill payment"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 15,
+        "fields": {
+            "category": 9,
+            "amount": "100.00",
+            "date": "2021-02-28",
+            "description": "Monthly savings deposit"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 16,
+        "fields": {
+            "category": 9,
+            "amount": "200.00",
+            "date": "2021-03-01",
+            "description": "Emergency fund contribution"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 17,
+        "fields": {
+            "category": 10,
+            "amount": "30.00",
+            "date": "2021-03-02",
+            "description": "Gift for friend's birthday"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 18,
+        "fields": {
+            "category": 4,
+            "amount": "15.00",
+            "date": "2021-03-03",
+            "description": "Concert ticket"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 19,
+        "fields": {
+            "category": 2,
+            "amount": "3.50",
+            "date": "2021-03-04",
+            "description": "Morning Cha at office"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 20,
+        "fields": {
+            "category": 7,
+            "amount": "75.00",
+            "date": "2021-03-05",
+            "description": "New pair of shoes"
+        }
+    },
+    {
+        "model": "reldemo.expense",
+        "pk": 21,
+        "fields": {
+            "category": 1,
+            "amount": "18.00",
+            "date": "2021-03-06",
+            "description": "Lunch at a fast food chain"
+        }
+    }
+
+]
