@@ -55,21 +55,21 @@
   <nav class="bg-primary-800 text-white fixed w-full z-10">
     <div class="container mx-auto px-4">
       <div class="flex justify-between items-center h-16">
+        <!-- Left Side: Toggle Button (if authenticated) + Read Wisely -->
         <div class="flex items-center">
           {% if user.is_authenticated %}
-          <button id="toggle-btn" class="mr-2 p-1 rounded-md hover:bg-primary-700 focus:outline-none">
-            <i class="fas fa-bars text-xl"></i>
-          </button>
+            <button id="toggle-btn" class="mr-2 p-1 rounded-md hover:bg-primary-700 focus:outline-none">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+          {% endif %}
           <a href="{% url 'book_list' %}" class="text-xl font-bold">Read Wisely</a>
         </div>
-        <div class="hidden md:block">
-          <h5 class="text-white"></h5>
-        </div>
-        <div>
-          <div class="md:flex items-center">
+
+        <!-- Right Side: User Profile Dropdown (if authenticated) or Login Button (hidden on login page) -->
+        <div class="flex items-center">
+          {% if user.is_authenticated %}
             <div class="relative" x-data="{ open: false }">
-              <button @click="open = !open"
-                class="flex items-center text-white hover:bg-primary-700 px-3 py-2 rounded-md">
+              <button @click="open = !open" class="flex items-center text-white hover:bg-primary-700 px-3 py-2 rounded-md">
                 <i class="fas fa-user-circle mr-2"></i>
                 <span>{{ user.username }}</span>
                 <i class="fas fa-chevron-down ml-2 text-xs"></i>
@@ -82,13 +82,13 @@
                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
               </div>
             </div>
-
-            {% endif %}
-          </div>
+          {% elif request.resolver_match.url_name != 'login' %}
+            <a href="{% url 'login' %}" class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm">Log In</a> 
+          {% endif %}
         </div>
       </div>
     </div>
-  </nav>
+</nav>
 
   <!-- Sidebar and Main Content -->
   <div class="flex pt-16 min-h-screen">
@@ -163,29 +163,6 @@
 
     <!-- Main Content -->
     <main id="content" class="flex-1 p-4 md:p-6 {% if user.is_authenticated %}md:ml-64{% endif %} content-transition">
-      <!-- Mobile header with title and login on same line -->
-      <div class="flex justify-between items-center mb-4 md:hidden">
-        <h1 class="text-2xl font-bold">Book List</h1>
-        <div>
-          {% if user.is_authenticated %}
-          <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="p-2 rounded-full bg-primary-600 text-white">
-              <i class="fas fa-user-circle"></i>
-            </button>
-            <div x-show="open" @click.away="open = false"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-              <a href="{% url 'user_profile' username=user.username %}"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-              <div class="border-t border-gray-100"></div>
-              <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
-            </div>
-          </div>
-          {% else %}
-          <a href="{% url 'login' %}" class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm">Log In</a>
-          {% endif %}
-        </div>
-      </div>
-
       <!-- Alerts/Messages -->
       {% if messages %}
       {% for message in messages %}
@@ -206,8 +183,7 @@
         <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
         <div class="flex space-x-2">
           <a href="{% url 'add_book' %}" class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">Add Book</a>
-          {% comment %} <a href="{% url 'book_list' %}"
-            class="px-3 py-1 border border-primary-600 text-primary-600 rounded-md text-sm">View All</a> {% endcomment %}
+
         </div>
       </div>
 
