@@ -479,7 +479,6 @@ def export_borrowed_books(request):
 
 # Set up logging
 logger = logging.getLogger(__name__)
-
 def review_detail(request, slug):
     """Display a book and its reviews."""
     book = get_object_or_404(Book, slug=slug)
