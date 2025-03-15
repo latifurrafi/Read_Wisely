@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ Profile.user.username }}'s Profile</title>
+  <style>
+    :root {
+      --primary: #00f7ff;
+      --secondary: #0051ff;
+      --background: #0a0a1a;
+      --card-bg: rgba(20, 20, 40, 0.7);
+      --text: #ffffff;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, var(--secondary) 0%, transparent 70%);
+      opacity: 0.1;
+      z-index: -1;
+    }
+    
+    .grid-bg {
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      top: -25%;
+      left: -25%;
+      background-image: 
+        linear-gradient(rgba(0, 247, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+      transform: perspective(500px) rotateX(60deg);
+      animation: grid-move 15s linear infinite;
+      z-index: -2;
+    }
+    
+    @keyframes grid-move {
+      0% {
+        transform: perspective(500px) rotateX(60deg) translateY(0);
+      }
+      100% {
+        transform: perspective(500px) rotateX(60deg) translateY(30px);
+      }
+    }
+    
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 40px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 30px rgba(0, 247, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 247, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      animation: card-appear 1s ease-out forwards;
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    
+    @keyframes card-appear {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .profile-card::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        rgba(0, 247, 255, 0) 40%,
+        rgba(0, 247, 255, 0.1) 50%,
+        rgba(0, 247, 255, 0) 60%
+      );
+      z-index: -1;
+      animation: shine 4s infinite;
+    }
+    
+    @keyframes shine {
+      0% {
+        transform: translateX(-100%) translateY(-100%) rotate(25deg);
+      }
+      100% {
+        transform: translateX(100%) translateY(100%) rotate(25deg);
+      }
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      text-align: center;
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      animation: text-flicker 5s infinite alternate;
+    }
+    
+    @keyframes text-flicker {
+      0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(0, 247, 255, 0.5), 0 0 20px rgba(0, 247, 255, 0.3);
+      }
+      20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+        opacity: 0.8;
+        text-shadow: none;
+      }
+    }
+    
+    .profile-info {
+      margin-bottom: 25px;
+      padding-left: 15px;
+      border-left: 2px solid var(--primary);
+      transform: translateX(-20px);
+      opacity: 0;
+      animation: slide-in 0.5s ease-out forwards;
+    }
+    
+    .profile-info:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    
+    .profile-info:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+    
+    .profile-info:nth-child(4) {
+      animation-delay: 0.9s;
+    }
+    
+    @keyframes slide-in {
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .profile-info strong {
+      color: var(--primary);
+      margin-right: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    
+    .profile-pic-container {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      margin: 0 auto 30px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(45deg, var(--secondary), var(--primary));
+      box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+      position: relative;
+      overflow: hidden;
+      animation: pulse 3s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 247, 255, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(0, 247, 255, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 247, 255, 0);
+      }
+    }
+    
+    .profile-pic {
+      width: 92%;
+      height: 92%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--background);
+    }
+    
+    .profile-pic-placeholder {
+      font-size: 3rem;
+      color: var(--background);
+    }
+    
+    .floating-particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 10s infinite linear;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      90% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(20px);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="floating-particles" id="particles"></div>
+  
+  <div class="profile-card">
+    <div class="profile-pic-container">
+      <!-- If profile picture exists, use it; otherwise, show placeholder -->
+      <img class="profile-pic" src="{{ Profile.image.url }}" alt="Profile Picture">
+      <!-- <div class="profile-pic-placeholder">{{ Profile.user.username.0 }}</div> -->
+    </div>
+    
+    <h1>{{ Profile.user.username }}'s Profile</h1>
+    
+    <div class="profile-info">
+      <p><strong>Bio:</strong> {{ Profile.bio }}</p>
+    </div>
+    
+    <div class="profile-info">
+      <p><strong>Birth Date:</strong> {{ Profile.birth_date }}</p>
+    </div>
+    
+    <div class="profile-info">
+      <p><strong>Location:</strong> {{ Profile.location }}</p>
+    </div>
+  </div>
+
+  <script>
+    // Create floating particles
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 20;
+    
+    for (let i = 0; i < particleCount; i++) {
+      createParticle();
+    }
+    
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      
+      // Random position
+      const posX = Math.random() * 100;
+      const posY = Math.random() * 100;
+      particle.style.left = `${posX}%`;
+      particle.style.top = `${posY}%`;
+      
+      // Random size
+      const size = Math.random() * 4 + 1;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      
+      // Random animation duration and delay
+      const duration = Math.random() * 15 + 10;
+      const delay = Math.random() * 5;
+      particle.style.animationDuration = `${duration}s`;
+      particle.style.animationDelay = `${delay}s`;
+      
+      particlesContainer.appendChild(particle);
+      
+      // Remove and recreate particle after animation ends
+      setTimeout(() => {
+        particle.remove();
+        createParticle();
+      }, (duration + delay) * 100);
+    }
+  </script>
+</body>
+</html>

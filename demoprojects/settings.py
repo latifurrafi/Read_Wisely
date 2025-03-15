@@ -49,6 +49,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
+
 MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',  # Enables language switching
     'django.middleware.common.CommonMiddleware',

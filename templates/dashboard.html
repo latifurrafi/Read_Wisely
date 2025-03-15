@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col md:flex-row">
+        <!-- Main Content -->
+        <main class="flex-1 p-4">
+            <!-- Header -->
+            <header class="bg-white p-4 rounded-lg shadow mb-6">
+                
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    <div class="flex items-center space-x-4">
+                      
+                        
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <div class="h-10 w-10 rounded-full overflow-hidden bg-primary-500 flex items-center justify-center text-white">
+                                            {% if user.profile.image %}
+                                                <img src="{{ user.profile.image.url }}" alt="{{ user.username }}" class="h-full w-full object-cover">
+                                            {% else %}
+                                                <span class="text-white">{{ user.username|first|upper }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="{% url 'user_profile' username=user.username %}">Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Log Out</a></li>
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'login' %}">Log in</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'register' %}">Register</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        
+
+
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                            <i class="fas fa-book text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Total Books</p>
+                            <h3 class="text-2xl font-bold">{{ books|length }} books</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Books Read</p>
+                            <h3 class="text-2xl font-bold">156</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
+                            <i class="fas fa-spinner text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Currently Reading</p>
+                            <h3 class="text-2xl font-bold">5</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-500 mr-4">
+                            <i class="fas fa-clock text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">To Be Read</p>
+                            <h3 class="text-2xl font-bold">87</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Genre Distribution Chart -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Genre Distribution</h3>
+                    <div class="h-80">
+                        <canvas id="genreChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Reading Progress Chart -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Reading Progress (Last 6 Months)</h3>
+                    <div class="h-80">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Books Added Over Time -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Books Added (This Year)</h3>
+                    <div class="h-80">
+                        <canvas id="booksAcquisitionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Reading Format Distribution -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">Reading Format</h3>
+                    <div class="h-80">
+                        <canvas id="formatChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Books -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Recently Added Books</h3>
+                    <a href="#" class="text-primary-600 hover:underline">View All</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Title</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Author</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Genre</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Added</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">The Midnight Library</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Matt Haig</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Fiction</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Read</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">2 days ago</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Atomic Habits</td>
+                                <td class="px-6 py-4 whitespace-nowrap">James Clear</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Self-Help</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Reading</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">5 days ago</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Project Hail Mary</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Andy Weir</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Sci-Fi</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">To
+                                        Read</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">1 week ago</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">The Psychology of Money</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Morgan Housel</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Finance</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Paused</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">2 weeks ago</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle mobile menu
+        // document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        //     const menu = document.getElementById('sidebar-menu');
+        //     menu.classList.toggle('hidden');
+        // });
+
+
+        //-----------------------------------------Category Chart data and configuration--------------------------------------------
+
+        document.addEventListener('DOMContentLoaded', function () {
+        // Parse JSON data from Django context
+        const genreLabels = JSON.parse('{{ labels|safe }}');
+        const genreData = JSON.parse('{{ data|safe }}');
+
+        console.log("Labels:", genreLabels);
+        console.log("Data:", genreData);
+        // Get the canvas element
+        const genreCtx = document.getElementById('genreChart').getContext('2d');
+
+        // Create the pie chart
+        const genreChart = new Chart(genreCtx, {
+            type: 'pie',
+            data: {
+                labels: genreLabels,
+                datasets: [{
+                    data: genreData,
+                    backgroundColor: [
+                        '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
+                        '#EC4899', '#6366F1', '#14B8A6', '#F97316'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    });
+        //-----------------------------------------Category Chart data and configuration--------------------------------------------
+
+
+        //-----------------------------------------Reading Progress Chart and configuration--------------------------------------------
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const progressLabels = JSON.parse('{{ labelss|safe }}');
+            const progressData = JSON.parse('{{ dataa|safe }}');
+    
+            console.log("Progress Labels:", progressLabels);
+            console.log("Progress Data:", progressData);
+    
+            const progressCtx = document.getElementById('progressChart').getContext('2d');
+            new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: progressLabels,
+                    datasets: [{
+                        label: 'Books Completed',
+                        data: progressData,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        //-----------------------------------------Reading Progress Chart and configuration--------------------------------------------
+
+        //-----------------------------------------Books Added Over Time Chart and configuration--------------------------------------------
+
+            document.addEventListener('DOMContentLoaded', function () {
+                fetch('/api/books-acquisition/')  // Adjust this URL to match your Django API
+                    .then(response => response.json())
+                    .then(booksData => {
+                        const bookCtx = document.getElementById('booksAcquisitionChart').getContext('2d');
+                        new Chart(bookCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: booksData.chart_labels,  // Dynamic Labels (Months)
+                                datasets: [{
+                                    label: 'Books Acquired',
+                                    data: booksData.chart_data,  // Dynamic Data (Books Added)
+                                    backgroundColor: '#3B82F6',  // Different color to distinguish charts
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error fetching books acquisition data:', error));
+            });
+        //-----------------------------------------Books Added Over Time Chart and configuration--------------------------------------------
+
+            // Reading Format Distribution
+            const formatCtx = document.getElementById('formatChart').getContext('2d');
+            const formatChart = new Chart(formatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paperback', 'Hardcover', 'E-Book', 'Audiobook'],
+                    datasets: [{
+                        data: [98, 56, 72, 22],
+                        backgroundColor: [
+                            '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        
+    </script>
+    <!-- Bootstrap JS Bundle (Includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include('reldemo.urls')),
     path('i18n/', include('django.conf.urls.i18n')),  # Add this line
+    path('manage-category/', include('manage_category.urls'))
 ]
 
 

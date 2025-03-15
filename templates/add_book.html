@@ -4,21 +4,599 @@
 {% block title %}{% if form.instance.pk %}Update{% else %}Add{% endif %} Book{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1 class="text-center mb-4">{% if form.instance.pk %}Update{% else %}Add{% endif %} Book</h1>
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Page header with icon -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+            <div class="bg-primary-100 p-3 rounded-full mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    {% if form.instance.pk %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    {% else %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    {% endif %}
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">{% if form.instance.pk %}Update{% else %}Add{% endif %} Book
+            </h1>
+        </div>
 
-        <div class="card shadow p-4 mt-3">
-            <form method="post" enctype="multipart/form-data">
+        <!-- Form progress indicator (visual only) -->
+        <div class="hidden md:block">
+            <div class="flex items-center">
+                <span class="text-sm text-gray-500 mr-2">Form completion:</span>
+                <div class="w-32 bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-primary-600 h-2.5 rounded-full" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <span class="text-sm text-gray-500 ml-2" id="progress-text">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main form card -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl">
+        <!-- Form header with accent color -->
+        <div class="bg-primary-600 px-6 py-4 text-white">
+            <h2 class="text-xl font-semibold">Book Information</h2>
+            <p class="text-primary-100 text-sm mt-1">Fill in the details about the book</p>
+        </div>
+
+        <!-- Form content -->
+        <div class="p-6">
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                class="mb-4 p-3 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %} text-sm">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data" id="book-form"
+                class="space-y-6" novalidate>
                 {% csrf_token %}
-                {{ form|crispy }}
-                <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
-                <div class="text-center mt-3">
-                    <button type="submit" class="btn btn-success">
-                        {% if form.instance.pk %}Update{% else %}Add{% endif %}
-                    </button>
-                    <a href="{% url 'homepage' %}" class="btn btn-secondary">Back</a>
+
+                <!-- Form sections with tabs -->
+                <div class="mb-4">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                            <button type="button"
+                                class="tab-btn active whitespace-nowrap py-3 px-1 border-b-2 border-primary-600 font-medium text-sm text-primary-600"
+                                data-tab="basic-info">
+                                Basic Information
+                            </button>
+                            <button type="button"
+                                class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                data-tab="details">
+                                Details & Description
+                            </button>
+                            <button type="button"
+                                class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                data-tab="cover">
+                                Cover & Files
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Tab content -->
+                <div id="form-tabs-content">
+                    <!-- Basic Information Tab -->
+                    <div id="basic-info-tab" class="tab-content">
+                        <div class="grid-cols-1 md:grid-cols-2 gap-6 ">
+
+                            <!-- Title field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.title.id_for_label }}"
+                                    class="block text-sm font-medium text-gray-700">
+                                    {{ form.title.label }}
+                                </label>
+                                <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}"
+                                    value="{{ form.title.value|default_if_none:'' }}"
+                                    class="border rounded-lg p-2 w-full focus:ring focus:ring-blue-500">
+                                {% if form.title.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.title.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Author field - assuming it's in the form -->
+
+                            <div class="md:col-span-2">
+                                <label for="id_new_author" class="block text-sm font-medium">Add Author</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" id="id_new_author" name="new_author"
+                                        class="border p-2 rounded w-full" placeholder="Enter new author">
+                                    <button type="button" id="addAuthorBtn"
+                                        class="bg-blue-500 text-white px-3 py-2 rounded">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Initially hidden dropdown -->
+                            <div class="md:col-span-2 hidden" id="authorDropdownContainer">
+                                <label for="id_authors" class="block text-sm font-medium">Select Author</label>
+                                <div class="border p-2 rounded w-full bg-white">
+                                    {% for auth in form.author.field.queryset %}
+                                    <label class="flex items-center space-x-2 py-1">
+                                        <input type="checkbox" name="author" value="{{ auth.id }}"
+                                            class="form-checkbox text-blue-600">
+                                        <span class="text-gray-700">{{ auth.name }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Year field - assuming it's in the form -->
+                            <div>
+                                {{ form.year|as_crispy_field }}
+                            </div>
+
+                            <!-- ISBN field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.isbn.id_for_label }}"
+                                    class="block text-sm font-medium text-gray-700">
+                                    {{ form.isbn.label }}
+                                </label>
+                                <input type="text" name="{{ form.isbn.name }}" id="{{ form.isbn.id_for_label }}"
+                                    value="{{ form.isbn.value|default_if_none:'' }}"
+                                    class="border rounded-lg p-2 w-full focus:ring focus:ring-blue-500">
+                                {% if form.isbn.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.isbn.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Category field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label for="id_new_category" class="block text-sm font-medium">Add Category</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" id="id_new_category" name="new_category"
+                                        class="border p-2 rounded w-full" placeholder="Enter new category">
+                                    <button type="button" id="addCategoryBtn"
+                                        class="bg-blue-500 text-white px-3 py-2 rounded">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Initially hidden dropdown -->
+                            <div class="md:col-span-2 hidden" id="categoryDropdownContainer">
+                                <label for="id_categories" class="block text-sm font-medium">Select Category</label>
+                                <div class="border p-2 rounded w-full bg-white">
+                                    {% for category in form.categories.field.queryset %}
+                                    <label class="flex items-center space-x-2 py-1">
+                                        <input type="checkbox" name="categories" value="{{ category.id }}"
+                                            class="form-checkbox text-blue-600">
+                                        <span class="text-gray-700">{{ category.name }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <!-- Details & Description Tab -->
+                    <div id="details-tab" class="tab-content hidden">
+                        <div class="space-y-6">
+                            <!-- Short-Story field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.story.id_for_label }}"
+                                    class="block text-sm font-medium text-gray-700">
+                                    {{ form.story.label }}
+                                </label>
+                                <input type="text" name="{{ form.story.name }}" id="{{ form.story.id_for_label }}"
+                                    value="{{ form.story.value|default_if_none:'' }}"
+                                    class="border rounded-lg p-2 w-full focus:ring focus:ring-blue-500">
+                                {% if form.story.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.story.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Page count field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.page.id_for_label }}"
+                                    class="block text-sm font-medium text-gray-700">
+                                    {{ form.page.label }}
+                                </label>
+                                <input type="text" name="{{ form.page.name }}" id="{{ form.page.id_for_label }}"
+                                    value="{{ form.page.value|default_if_none:'' }}"
+                                    class="border rounded-lg p-2 w-full focus:ring focus:ring-blue-500">
+                                {% if form.page.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.page.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Language field - assuming it's in the form -->
+
+                            <div>
+                                {{ form.language|as_crispy_field }}
+                            </div>
+                            <!-- Tags field - assuming it's in the form -->
+                            <div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cover & Files Tab -->
+                    <div id="cover-tab" class="tab-content hidden">
+                        <div class="space-y-6">
+                            <!-- Image upload field - assuming it's in the form -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Book Cover</label>
+
+                                <div class="mt-1 flex items-center">
+                                    <!-- Image Preview -->
+                                    <div id="image-preview"
+                                        class="w-32 h-40 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden mr-4 border-2 border-dashed border-gray-300">
+                                        {% if form.instance.image %}
+                                        <img src="{{ form.instance.image.url }}" alt="Book cover"
+                                            class="w-full h-full object-cover">
+                                        {% elif form.instance.image_url %}
+                                        <img src="{{ form.instance.image_url }}" alt="Book cover"
+                                            class="w-full h-full object-cover">
+                                        {% else %}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0z" />
+                                        </svg>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Upload Option Buttons -->
+                                    <div class="space-y-2">
+                                        <button type="button" id="toggle-url"
+                                            class="px-3 py-1 border rounded bg-blue-500 text-white text-sm">Use
+                                            URL</button>
+                                        <button type="button" id="toggle-upload"
+                                            class="px-3 py-1 border rounded bg-green-500 text-white text-sm hidden">Upload
+                                            File</button>
+
+                                        <!-- Image Upload Field (Initially Visible) -->
+                                        <div id="upload-container">
+                                            <label class="block text-sm font-medium text-gray-700">Upload Image</label>
+                                            <input type="file" name="{{ form.image.name }}"
+                                                id="{{ form.image.id_for_label }}" class="border rounded-lg p-2 w-full">
+                                            {% if form.image.errors %}
+                                            <p class="text-red-500 text-xs mt-1">{{ form.image.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Image URL Field (Initially Hidden) -->
+                                        <div id="url-container" class="hidden">
+                                            <label for="{{ form.image_url.id_for_label }}"
+                                                class="block text-sm font-medium text-gray-700">Image URL</label>
+                                            <input type="text" name="{{ form.image_url.name }}"
+                                                id="{{ form.image_url.id_for_label }}"
+                                                value="{{ form.image_url.value|default_if_none:'' }}"
+                                                class="border rounded-lg p-2 w-full">
+                                            {% if form.image_url.errors %}
+                                            <p class="text-red-500 text-xs mt-1">{{ form.image_url.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PDF file field - assuming it's in the form -->
+                            <div>
+                                {{ form.pdf_file|as_crispy_field }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="{{ form.available_copies.id_for_label }}"
+                                    class="block text-sm font-medium text-gray-700">
+                                    {{ form.available_copies.label }}
+                                </label>
+                                <input type="text" name="{{ form.available_copies.name }}"
+                                    id="{{ form.available_copies.id_for_label }}"
+                                    value="{{ form.available_copies.value|default_if_none:'' }}"
+                                    class="border rounded-lg p-2 w-full focus:ring focus:ring-blue-500">
+                                {% if form.available_copies.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.available_copies.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Any remaining fields that don't fit in the tabs -->
+                <div class="hidden">
+                    {% for field in form %}
+                        {% if field.name != 'title' and field.name != 'author' and field.name != 'year' and field.name != 'isbn' and field.name != 'Categories' and field.name != 'story' and field.name != 'page' and field.name != 'language' and field.name != 'tags' and field.name != 'image' and field.name != 'image_url' and field.name != 'pdf_file' %}
+                            {{ field|as_crispy_field }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Form actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <a href="{% url 'book_list' %}"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 -ml-1" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back
+                    </a>
+
+                    <div class="flex space-x-3">
+                        <button type="reset"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 -ml-1" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Reset
+                        </button>
+
+                        <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 -ml-1" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                {% if form.instance.pk %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
+                                {% else %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                {% endif %}
+                            </svg>
+                            {% if form.instance.pk %}Update{% else %}Add{% endif %} Book
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
+
+        <!-- Tips and guidelines card -->
+        <div class="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Tips for adding books</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Use high-quality cover images for better display</li>
+                            <li>ISBN format should be either ISBN-10 or ISBN-13</li>
+                            <li>Add detailed descriptions to help readers find your book</li>
+                            <li>Use tags to categorize your book and make it more discoverable</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-{% endblock %}
+
+    <script>
+        //-----------------------------------------Image Purpose------------------------------------------------
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleUrlBtn = document.getElementById("toggle-url");
+            const toggleUploadBtn = document.getElementById("toggle-upload");
+            const uploadContainer = document.getElementById("upload-container");
+            const urlContainer = document.getElementById("url-container");
+
+            toggleUrlBtn.addEventListener("click", function () {
+                uploadContainer.classList.add("hidden");
+                urlContainer.classList.remove("hidden");
+                toggleUrlBtn.classList.add("hidden");
+                toggleUploadBtn.classList.remove("hidden");
+            });
+
+            toggleUploadBtn.addEventListener("click", function () {
+                urlContainer.classList.add("hidden");
+                uploadContainer.classList.remove("hidden");
+                toggleUploadBtn.classList.add("hidden");
+                toggleUrlBtn.classList.remove("hidden");
+            });
+        });
+
+        //-----------------------------------------Image Purpose------------------------------------------------
+
+        //--------------------------------------------Author Purpose-------------------------------------------------------
+
+        document.getElementById('addAuthorBtn').addEventListener('click', function () {
+            let authorInput = document.getElementById('id_new_author');
+            let authorName = authorInput.value.trim();
+            let dropdownContainer = document.getElementById('authorDropdownContainer');
+            let checkboxContainer = dropdownContainer.querySelector('.border');
+
+            // Show dropdown if hidden
+            if (dropdownContainer.classList.contains('hidden')) {
+                dropdownContainer.classList.remove('hidden');
+                return;
+            }
+
+            if (authorName) {
+                // Check if author already exists
+                let existingLabels = checkboxContainer.querySelectorAll('label span');
+                for (let label of existingLabels) {
+                    if (label.textContent.toLowerCase() === authorName.toLowerCase()) {
+                        alert("Author already exists!");
+                        return;
+                    }
+                }
+
+                // Create new checkbox input and label
+                let label = document.createElement('label');
+                label.classList.add('flex', 'items-center', 'space-x-2', 'py-1');
+
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'author';
+                checkbox.value = authorName;  // Temporary value (handled in views)
+                checkbox.classList.add('form-checkbox', 'text-blue-600');
+                checkbox.checked = true;
+
+                let span = document.createElement('span');
+                span.classList.add('text-gray-700');
+                span.textContent = authorName;
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                checkboxContainer.appendChild(label);
+
+                // Clear input field
+                authorInput.value = '';
+            } else {
+                alert("Enter an author name first!");
+            }
+        });
+        //--------------------------------------------Author Purpose-------------------------------------------------------
+
+
+        // -------------------------------------category_Purpose------------------------------------------------------------
+
+        document.getElementById('addCategoryBtn').addEventListener('click', function () {
+            let categoryInput = document.getElementById('id_new_category');
+            let categoryName = categoryInput.value.trim();
+            let dropdownContainer = document.getElementById('categoryDropdownContainer');
+            let selectBox = document.getElementById('id_categories');
+
+            // Show dropdown if hidden
+            if (dropdownContainer.classList.contains('hidden')) {
+                dropdownContainer.classList.remove('hidden');
+                return;
+            }
+
+            if (categoryName) {
+                // Check if category already exists
+                for (let option of selectBox.options) {
+                    if (option.text.toLowerCase() === categoryName.toLowerCase()) {
+                        alert("Category already exists!");
+                        return;
+                    }
+                }
+
+                // Create new option and add to select box
+                let newOption = document.createElement('option');
+                newOption.value = categoryName;  // Temporary value (handled in views)
+                newOption.text = categoryName;
+                newOption.selected = true;
+                selectBox.appendChild(newOption);
+
+                // Clear input field
+                categoryInput.value = '';
+            } else {
+                alert("Enter a category name first!");
+            }
+        });
+        // -------------------------------------category_Purpose------------------------------------------------------------
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab navigation
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'border-primary-600', 'text-primary-600');
+                        btn.classList.add('border-transparent', 'text-gray-500');
+                    });
+
+                    // Add active class to clicked button
+                    button.classList.add('active', 'border-primary-600', 'text-primary-600');
+                    button.classList.remove('border-transparent', 'text-gray-500');
+
+                    // Hide all tab contents
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+
+                    // Show the corresponding tab content
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId + '-tab').classList.remove('hidden');
+                });
+            });
+
+            // Image preview functionality
+            const imageInput = document.querySelector('input[type="file"][name$="image"]');
+            const imagePreview = document.getElementById('image-preview');
+
+            if (imageInput) {
+                imageInput.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            // Clear previous content
+                            imagePreview.innerHTML = '';
+
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.alt = 'Book cover preview';
+                            img.className = 'w-full h-full object-cover';
+
+                            // Add image to preview
+                            imagePreview.appendChild(img);
+                        }
+
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+
+            // Form progress indicator (visual only)
+            const form = document.getElementById('book-form');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            const totalRequired = requiredInputs.length;
+
+            function updateProgress() {
+                if (totalRequired === 0) return;
+
+                let filledCount = 0;
+                requiredInputs.forEach(input => {
+                    if (input.value.trim() !== '') {
+                        filledCount++;
+                    }
+                });
+
+                const percentage = Math.round((filledCount / totalRequired) * 100);
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = percentage + '%';
+
+                // Update color based on progress
+                if (percentage < 30) {
+                    progressBar.className = 'bg-red-500 h-2.5 rounded-full';
+                } else if (percentage < 70) {
+                    progressBar.className = 'bg-yellow-500 h-2.5 rounded-full';
+                } else {
+                    progressBar.className = 'bg-green-500 h-2.5 rounded-full';
+                }
+            }
+
+            // Update progress on input change
+            requiredInputs.forEach(input => {
+                input.addEventListener('input', updateProgress);
+                input.addEventListener('change', updateProgress);
+            });
+
+            // Initial progress update
+            updateProgress();
+        });
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Load jQuery and Select2 for better dropdowns -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+    <!-- Load Custom JavaScript -->
+    {% endblock %}

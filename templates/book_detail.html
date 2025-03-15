@@ -1,248 +1,1086 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}{{ book.title }} - Book Details{% endblock %}
+{% load static %}
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Back button -->
+    <div class="p-4 bg-gray-50 border-b border-gray-100">
+        <a href="{% url 'book_list' %}"
+            class="inline-flex items-center text-primary-600 hover:text-primary-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Book List
+        </a>
+    </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ book.title }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Montserrat:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-</head>
+    <!-- Book Header Section -->
+    <div class="md:flex">
+        <!-- Left side: Image (responsive) -->
+        <div class="md:w-2/5 relative h-96 md:h-auto">
+            {% if book.image_url %}
+            <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+            {% elif book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+            {% else %}
+            <img src="/static/default.jpg" alt="Book Cover" class="w-full h-full object-cover">
+            {% endif %}
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 min-h-screen py-12 px-4 font-['Montserrat']">
-    <div class="max-w-4xl mx-auto">
-        <div
-            class="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-            <div class="md:flex">
-                <!-- Left side: Image (responsive) -->
-                <div class="md:w-2/5 relative h-80 md:h-auto">
-                    <img src="https://picsum.photos/800/1200" alt="Book Cover" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                </div>
+            <!-- Floating action buttons -->
+            <div class="absolute bottom-4 right-4 flex space-x-2">
+                {% if user.is_authenticated %}
+                <button id="favorite-btn"
+                    class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 text-gray-400 group-hover:text-red-500 transition-colors" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+                <button id="share-btn"
+                    class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+        </div>
 
-                <!-- Right side: Content -->
-                <div class="md:w-3/5 p-8">
-                    <div class="flex items-center mb-4">
-                        <div class="h-1 w-10 bg-indigo-600 rounded mr-2"></div>
-                        <span class="text-xs uppercase tracking-wider text-indigo-600 font-semibold">Book Details</span>
-                    </div>
+        <!-- Right side: Content -->
+        <div class="md:w-3/5 p-8">
+            <div class="flex items-center mb-4">
+                <div class="h-1 w-10 bg-primary-600 rounded mr-2"></div>
+                <span class="text-xs uppercase tracking-wider text-primary-600 font-semibold">Book Details</span>
+            </div>
 
-                    <h1 class="text-3xl md:text-4xl font-bold font-['Merriweather'] text-gray-900 leading-tight">{{ book.title }}</h1>
-                    <h3 class="mt-2 text-lg text-gray-600">By <span class="font-medium text-gray-800">
-                            {% for author in book.author.all %}
-                            {{ author.name }}{% if not forloop.last %}, {% endif %}
-                            {% empty %}
+            <h1 class="text-3xl md:text-4xl font-bold font-serif text-gray-900 leading-tight">{{ book.title }}</h1>
+
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                <h3 class="text-lg text-gray-600">By
+                    <span class="font-medium text-gray-800">
+                        {% for author in book.author.all %}
+                            <a href="#author-info" class="hover:text-primary-600 transition-colors">{{ author.name }}</a>
+                            {% if not forloop.last %}, {% endif %}
+                        {% empty %}
                             Unknown Author
-                            {% endfor %}</span></h3>
+                        {% endfor %}
+                    </span>
+                </h3>
 
-                    <div class="flex items-center mt-4 space-x-2">
-                        <div class="flex text-amber-400">
-                            <!-- Star rating (example: 4.5/5) -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <span class="text-gray-600 text-sm">4.5/5 (120 reviews)</span>
-                    </div>
+                {% if book.category %}
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">{{ book.category }}</span>
+                {% endif %}
+            </div>
 
-                    <p class="mt-6 text-gray-600 leading-relaxed">{{ book.description }}</p>
+            <div class="flex items-center mt-4 space-x-2">
+                <div class="flex text-amber-400">
+                    <!-- Star rating (example: 4.5/5) -->
+                    <div id="star-rating" class="flex"></div>
+                </div>
+                <span class="text-gray-600 text-sm"><span id="rating-value">4.5</span>/5 (<span
+                        id="review-count">120</span> reviews)</span>
+                {% if user.is_authenticated %}
+                <button id="rate-book" class="text-xs text-primary-600 hover:text-primary-700 hover:underline ml-2">Rate
+                    this book</button>
+                {% endif %}
+            </div>
 
-                    <div class="mt-8 space-y-4">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            <span class="ml-2 text-gray-700">{{ book.page }} pages</span>
-                        </div>
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span class="ml-2 text-gray-700">Published: {{ book.year }}</span>
-                        </div>
-                    </div>
+            <p class="mt-6 text-gray-600 leading-relaxed">{{ book.description }}</p>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span class="ml-2 text-gray-700">{{ book.page|default:"Unknown" }} pages</span>
+                </div>
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="ml-2 text-gray-700">Published: {{ book.year }}</span>
+                </div>
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span class="ml-2 text-gray-700">ISBN: {{ book.isbn|default:"Not available" }}</span>
+                </div>
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                    </svg>
+                    <span class="ml-2 text-gray-700">Language: {{ book.language|default:"English" }}</span>
                 </div>
             </div>
 
-            <!-- Story section -->
-            <div class="p-8 bg-gray-50 border-t border-gray-100">
-                <h2 class="text-2xl font-semibold text-gray-800 font-['Merriweather'] mb-4">Story</h2>
-                <p class="text-gray-700 leading-relaxed font-light">{{ book.story }}</p>
-                <!-- Replace your existing PDF iframe code with this complete solution -->
-                <div class="mt-8">
-                    <h2 class="text-xl font-semibold text-gray-800">Read the Book</h2>
-                    <div id="pdf-container" class="w-full h-[500px] border rounded-lg shadow-md">
-                        <!-- PDF will be loaded here -->
+            <!-- Action buttons -->
+            <div class="mt-8 flex flex-wrap gap-3">
+                {% if user.is_authenticated %}
+                <a href="{% url 'update_book' book.id %}"
+                    class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg shadow-md hover:bg-primary-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Book
+                </a>
+                <button id="delete-btn"
+                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Book
+                </button>
+                {% endif %}
+                <button id="read-btn"
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Read Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="border-t border-gray-100">
+        <div class="flex overflow-x-auto" id="tabs">
+            <button class="tab-btn active px-6 py-3 font-medium text-gray-800 border-b-2 border-primary-600"
+                data-tab="story">Story</button>
+            <button
+                class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-800 border-b-2 border-transparent"
+                data-tab="read">Read Book</button>
+            <button
+                class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-800 border-b-2 border-transparent"
+                data-tab="reviews">Reviews</button>
+            <button
+                class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-800 border-b-2 border-transparent"
+                data-tab="author">Author</button>
+            <button
+                class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-800 border-b-2 border-transparent"
+                data-tab="related">Related Books</button>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-8">
+        <!-- Story Tab -->
+        <div id="story-tab" class="tab-content">
+            <h2 class="text-2xl font-semibold text-gray-800 font-serif mb-4">Story</h2>
+            <p class="text-gray-700 leading-relaxed">{{ book.story|default:"No story description available for this book."}}</p>
+
+            <!-- Categories -->
+            <div class="mt-8 flex flex-wrap gap-2">
+                {% for category in book.categories.all %}
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">{{ category.name }}</span>
+                {% empty %}
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">Fiction</span>
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">Adventure</span>
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">Fantasy</span>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- Read Book Tab -->
+        <div id="read-tab" class="tab-content hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 font-serif mb-4">Read the Book</h2>
+
+            <!-- PDF Viewer with enhanced controls -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div id="pdf-container" class="w-full h-[600px] bg-white border rounded-lg shadow-md overflow-hidden">
+                    <!-- PDF will be loaded here -->
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 animate-pulse" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <span class="ml-2">Loading PDF...</span>
                     </div>
-                    <div id="pdf-controls" class="mt-2 flex space-x-2">
-                        <button id="prev" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</button>
-                        <span id="page-info" class="py-1">Page: 1</span>
-                        <button id="next" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</button>
-                        <button id="zoom-out" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">-</button>
-                        <span id="zoom-level" class="py-1">100%</span>
-                        <button id="zoom-in" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <div class="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-1">
+                        <button id="prev" class="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                            title="Previous Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <span id="page-info" class="text-sm text-gray-600">Page: 1</span>
+                        <button id="next" class="p-2 hover:bg-gray-100 rounded-md transition-colors" title="Next Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
                     </div>
-                    <a href="{{ book.pdf_file.url }}" target="_blank"
-                        class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-4">
+
+                    <div class="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-1">
+                        <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                            title="Zoom Out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                            </svg>
+                        </button>
+                        <span id="zoom-level" class="text-sm text-gray-600">100%</span>
+                        <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded-md transition-colors" title="Zoom In">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <button id="fullscreen"
+                        class="p-2 bg-white hover:bg-gray-100 rounded-lg shadow-sm transition-colors"
+                        title="Fullscreen">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                    </button>
+
+                    <a href="{{ book.pdf_file.url }}" download
+                        class="ml-auto inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg shadow-md hover:bg-primary-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
                         Download PDF
-                    </a>
-                </div>
-
-                <!-- Add PDF.js scripts -->
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-                <script>
-                    // Configure PDF.js worker
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-                    // Set up PDF viewer
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const url = '{{ book.pdf_file.url }}'; // Get the PDF URL from your template variable
-                        const container = document.getElementById('pdf-container');
-                        const pageInfo = document.getElementById('page-info');
-                        const prevButton = document.getElementById('prev');
-                        const nextButton = document.getElementById('next');
-                        const zoomInButton = document.getElementById('zoom-in');
-                        const zoomOutButton = document.getElementById('zoom-out');
-                        const zoomLevel = document.getElementById('zoom-level');
-
-                        let pdfDoc = null;
-                        let pageNum = 1;
-                        let scale = 1.0;
-                        let canvas = null;
-                        let ctx = null;
-
-                        // Load the PDF
-                        pdfjsLib.getDocument(url).promise.then(function (pdf) {
-                            pdfDoc = pdf;
-                            pageInfo.textContent = `Page: ${pageNum} of ${pdf.numPages}`;
-
-                            // Create canvas if it doesn't exist
-                            if (!canvas) {
-                                canvas = document.createElement('canvas');
-                                canvas.className = 'pdf-canvas';
-                                ctx = canvas.getContext('2d');
-                                container.appendChild(canvas);
-
-                                // Style the container for scrolling
-                                container.style.overflow = 'auto';
-                            }
-
-                            renderPage(pageNum);
-                        }).catch(function (error) {
-                            console.error('Error loading PDF:', error);
-                            container.innerHTML = '<div class="p-4 text-red-600">Error loading PDF. Please try downloading instead.</div>';
-                        });
-
-                        // Render a specific page
-                        function renderPage(num) {
-                            pdfDoc.getPage(num).then(function (page) {
-                                const viewport = page.getViewport({ scale });
-                                canvas.height = viewport.height;
-                                canvas.width = viewport.width;
-
-                                const renderContext = {
-                                    canvasContext: ctx,
-                                    viewport: viewport
-                                };
-
-                                page.render(renderContext);
-                            });
-                        }
-
-                        // Button event handlers
-                        prevButton.addEventListener('click', function () {
-                            if (pageNum <= 1) return;
-                            pageNum--;
-                            renderPage(pageNum);
-                            pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
-                        });
-
-                        nextButton.addEventListener('click', function () {
-                            if (pageNum >= pdfDoc.numPages) return;
-                            pageNum++;
-                            renderPage(pageNum);
-                            pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
-                        });
-
-                        zoomInButton.addEventListener('click', function () {
-                            scale += 0.2;
-                            renderPage(pageNum);
-                            zoomLevel.textContent = `${Math.round(scale * 100)}%`;
-                        });
-
-                        zoomOutButton.addEventListener('click', function () {
-                            if (scale <= 0.2) return;
-                            scale -= 0.2;
-                            renderPage(pageNum);
-                            zoomLevel.textContent = `${Math.round(scale * 100)}%`;
-                        });
-                    });
-                </script>
-
-                <!-- Tags -->
-                <div class="mt-8 flex flex-wrap gap-2">
-                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">Fiction</span>
-                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">Adventure</span>
-                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">Fantasy</span>
-                </div>
-
-                <!-- Navigation buttons -->
-                <div class="mt-8 flex flex-wrap gap-4">
-                    <a href="{% url 'homepage' %}"
-                        class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Book List
-                    </a>
-                    <a href="#"
-                        class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        Add to Favorites
                     </a>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- <script>
-        
-    </script> -->
-</body>
 
-</html>
+        {% comment %} <!----------------------------------------------------------Reviews Tab ------------------------------------------------------------------> {% endcomment %}
+        <div id="reviews-tab" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600 font-sans tracking-tight">Reviews</h2>
+                {% if user.is_authenticated %}
+                <button id="add-review-btn"
+                    class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 backdrop-blur-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Write a Review
+                </button>
+                {% endif %}
+            </div>
+        
+            <!-- Review form (hidden by default) -->
+            <div id="review-form" class="hidden mb-10 p-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-700/50 shadow-xl text-white">
+                <h3 class="text-xl font-medium mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300">Write Your Review</h3>
+                
+                <!-- Error message container (initially hidden) -->
+                <div id="review-error" class="hidden mb-6 p-4 bg-red-900/40 backdrop-blur-sm border border-red-500/50 text-red-200 rounded-xl">
+                    <p class="error-message flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span></span>
+                    </p>
+                </div>
+                
+                <form id="new-review-form" method="POST" action="{% url 'add_review' book.slug %}" class="space-y-6">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-cyan-200 text-sm font-medium mb-3">Rating</label>
+                        <div class="flex space-x-2" id="rating-stars">
+                            <button type="button" class="rating-star text-slate-500 hover:text-cyan-400 text-2xl transition-colors duration-200" data-rating="1">★</button>
+                            <button type="button" class="rating-star text-slate-500 hover:text-cyan-400 text-2xl transition-colors duration-200" data-rating="2">★</button>
+                            <button type="button" class="rating-star text-slate-500 hover:text-cyan-400 text-2xl transition-colors duration-200" data-rating="3">★</button>
+                            <button type="button" class="rating-star text-slate-500 hover:text-cyan-400 text-2xl transition-colors duration-200" data-rating="4">★</button>
+                            <button type="button" class="rating-star text-slate-500 hover:text-cyan-400 text-2xl transition-colors duration-200" data-rating="5">★</button>
+                            <input type="hidden" name="rating" id="rating-input" value="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="review-content" class="block text-cyan-200 text-sm font-medium mb-3">Review</label>
+                        <textarea id="review-content" name="content" rows="4" class="w-full px-4 py-3 bg-slate-700/50 backdrop-blur-md border border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent text-white placeholder-slate-400 transition-all duration-300"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-review" class="px-5 py-2.5 bg-slate-700/80 text-slate-200 rounded-xl hover:bg-slate-600/80 transition-all duration-300">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl shadow-lg hover:shadow-cyan-500/30 transition-all duration-300 flex items-center gap-2">
+                            <span>Submit</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        
+            <!-- Reviews list -->
+            <div id="reviews-list" class="space-y-6">
+                {% for rev in reviews %}
+                <div class="p-6 bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-700/30 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 group">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="text-white font-semibold text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300">{{ rev.book.title }}</h4>
+                            <div class="flex items-center mt-2">
+                                {% for _ in "x"|rjust:rev.rating %}
+                                    <svg class="w-5 h-5 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 17.3l-5.5 3.6 1.7-6.1-4.9-4.1 6.4-.5L12 4l2.3 6.1 6.4.5-4.9 4.1 1.7 6.1z"/>
+                                    </svg>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full">{{ rev.created_at }}</span>
+                    </div>
+                    <p class="mt-4 text-slate-300 leading-relaxed">{{ rev.comment }}</p>
+                    <div class="mt-5 flex items-center space-x-4">
+                        <div class="relative h-12 w-12 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 p-[2px]">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Reviewer" class="h-full w-full rounded-full border-2 border-slate-800">
+                            <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-cyan-400 border-2 border-slate-800"></span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-white">{{ rev.user.username }}</span>
+                            <p class="text-xs text-cyan-400 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                Verified Reviewer
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        
+            <!-- Load more reviews button -->
+            
+            <div class="mt-10 text-center">
+                <button id="load-more-reviews"
+                    class="px-6 py-3 bg-gradient-to-r from-slate-700/80 to-slate-800/80 backdrop-blur-sm border border-slate-600/30 rounded-xl text-slate-200 hover:text-white hover:shadow-lg hover:shadow-indigo-500/20 transition-all duration-300 flex items-center gap-2 mx-auto">
+                    <span>Load More Reviews</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                let offset = 3;  // Start from the 4th review
+
+                $("#load-more-reviews").click(function() {
+                    $.ajax({
+                        url: "{% url 'load_more_reviews' book.slug %}",
+                        data: { offset: offset },
+                        dataType: "json",
+                        success: function(data) {
+                            if (data.reviews.length > 0) {
+                                data.reviews.forEach(review => {
+                                    $("#reviews-list").append(`
+                                        <div class="p-6 bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-700/30 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 group">
+                                            <div class="flex justify-between items-center">
+                                                <div>
+                                                    <h4 class="text-white font-semibold text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300">
+                                                        ${review.user}
+                                                    </h4>
+                                                    <div class="flex items-center mt-2">
+                                                        ${getStarRating(review.rating)}
+                                                    </div>
+                                                </div>
+                                                <span class="text-xs text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full">
+                                                    ${review.created_at}
+                                                </span>
+                                            </div>
+                                            <p class="mt-4 text-slate-300 leading-relaxed">${review.comment}</p>
+                                            <div class="mt-5 flex items-center space-x-4">
+                                                <div class="relative h-12 w-12 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 p-[2px]">
+                                                    <img src="https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}" alt="Reviewer" class="h-full w-full rounded-full border-2 border-slate-800">
+                                                    <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-cyan-400 border-2 border-slate-800"></span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-sm font-medium text-white">${review.user}</span>
+                                                    <p class="text-xs text-cyan-400 flex items-center gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                        </svg>
+                                                        Verified Reviewer
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `);
+                                });
+                                offset += 3;
+                            } else {
+                                $("#load-more-reviews").hide();  // Hide button if no more reviews
+                            }
+                        }
+                    });
+                });
+            
+                // Function to generate star rating UI
+                function getStarRating(rating) {
+                    let stars = '';
+                    for (let i = 1; i <= 5; i++) {
+                        stars += i <= rating
+                            ? `<svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                 <path d="M9.049 2.927c.3-.921 1.602-.921 1.902 0l1.236 3.773 3.976.03c.97.007 1.37 1.251.588 1.81l-3.18 2.24 1.216 3.82c.293.921-.756 1.685-1.588 1.118l-3.236-2.334-3.236 2.334c-.832.567-1.88-.197-1.588-1.118l1.216-3.82-3.18-2.24c-.782-.56-.382-1.803.588-1.81l3.976-.03 1.236-3.773z"/>
+                               </svg>`
+                            : `<svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                 <path d="M9.049 2.927c.3-.921 1.602-.921 1.902 0l1.236 3.773 3.976.03c.97.007 1.37 1.251.588 1.81l-3.18 2.24 1.216 3.82c.293.921-.756 1.685-1.588 1.118l-3.236-2.334-3.236 2.334c-.832.567-1.88-.197-1.588-1.118l1.216-3.82-3.18-2.24c-.782-.56-.382-1.803.588-1.81l3.976-.03 1.236-3.773z"/>
+                               </svg>`;
+                    }
+                    return `<div class="flex">${stars}</div>`;
+                }
+            </script>
+            
+        </div>
+
+        {% comment %} <!----------------------------------------------------------Reviews Tab ------------------------------------------------------------------> {% endcomment %}
+
+
+        {% comment %} <!----------------------------------------------------------Author Tab ------------------------------------------------------------------> {% endcomment %}
+
+        <div id="author-tab" class="tab-content hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 font-serif mb-6">About the Author</h2>
+
+            {% for author in book.author.all %}
+            <div class="flex flex-col md:flex-row gap-6 mb-8">
+                <div class="md:w-1/4">
+                    <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="{{ author.name }}"
+                        class="w-full h-auto rounded-lg shadow-md">
+                </div>
+                <div class="md:w-3/4">
+                    <h3 class="text-xl font-medium text-gray-800 mb-2">{{ author.name }}</h3>
+                    <p class="text-gray-600 mb-4">{{ author.bio|default:"This author has not provided a biography yet."}}</p>
+
+                    <div class="flex items-center text-gray-700 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                        </svg>
+                        <span>Born: {{ author.birth_date|default:"Unknown" }}</span>
+                    </div>
+
+                    <div class="flex items-center text-gray-700 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span>Nationality: {{ author.nationality|default:"Unknown" }}</span>
+                    </div>
+
+                    <h4 class="font-medium text-gray-800 mb-2">Other Books by {{ author.name }}</h4>
+                    <ul class="list-disc list-inside text-gray-600 ml-2 space-y-1">
+                        <li>The Hidden Path (2018)</li>
+                        <li>Echoes of Tomorrow (2020)</li>
+                        <li>Whispers in the Dark (2022)</li>
+                    </ul>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-gray-600">No author information available for this book.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% comment %} <!-----------------------------------------------------------------Related Books Tab-------------------------------------------------------> {% endcomment %}
+        <div id="related-tab" class="tab-content hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 font-serif mb-6">Related Books</h2>
+
+            <!-- Related Books Section -->
+            <div id="related-books-container">
+                {% if related_books %}
+                <div class="related-books-grid">
+                    {% for book in related_books %}
+                    <div class="book-card" data-book-id="{{ book.id }}">
+                        {% if book.image_url %}
+                        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                        {% else %}
+                        <div class="no-image-placeholder">No Image</div>
+                        {% endif %}
+
+                        <h3>{{ book.title }}</h3>
+
+                        <p>Categories:
+                            {% for category in book.categories.all %}
+                            {{ category.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+
+                        <a href="{% url 'book_detail' book.id %}" class="view-details-btn">View Details</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="no-books-message">No related books found.</p>
+                {% endif %}
+            </div>
+            <style>
+                .related-books-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 20px;
+                    margin-top: 20px;
+                }
+
+                .book-card {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 15px;
+                    transition: transform 0.3s ease;
+                }
+
+                .book-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                }
+
+                .book-image,
+                .no-image-placeholder {
+                    width: 100%;
+                    height: 200px;
+                    object-fit: cover;
+                    border-radius: 4px;
+                    margin-bottom: 10px;
+                }
+
+                .no-image-placeholder {
+                    background-color: #f0f0f0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #666;
+                }
+
+                .view-details-btn {
+                    display: inline-block;
+                    background-color: #007bff;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    text-decoration: none;
+                    margin-top: 10px;
+                }
+
+                .no-books-message {
+                    padding: 20px;
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                    text-align: center;
+                    color: #6c757d;
+                }
+            </style>
+            <!-- Add JavaScript for auto-reload -->
+        </div>
+    </div>
+</div>
+
+{% comment %} <!----------------------------------------------------Delete Confirmation Modal------------------------------------------------------------------> {% endcomment %}
+
+<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg max-w-md w-full">
+        <div class="px-4 py-3 border-b border-gray-200">
+            <h5 class="text-lg font-semibold">Confirm Deletion</h5>
+        </div>
+        <div class="p-4">
+            <p>Are you sure you want to delete "{{ book.title }}"? This action cannot be undone.</p>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 flex justify-end space-x-2">
+            <button type="button" id="cancel-delete"
+                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                Cancel
+            </button>
+            <form method="post" action="{% url 'delete_book' book.id %}">
+                {% csrf_token %}
+                <button type="submit"
+                    class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Delete
+                    Book</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% comment %} <!-----------------------------------------------------------Share Modal-----------------------------------------------------------------------------> {% endcomment %}
+
+<div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg max-w-md w-full">
+        <div class="px-4 py-3 border-b border-gray-200">
+            <h5 class="text-lg font-semibold">Share This Book</h5>
+        </div>
+        <div class="p-4">
+            <p class="mb-4">Share this book with your friends and colleagues:</p>
+            <div class="flex flex-wrap gap-3 justify-center">
+                <a href="https://www.facebook.com/" target="_blank">
+                    <button class="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+                        </svg>
+                    </button>
+                </a>
+                <a href="https://www.x.com/" target="_blank">
+                <button class="p-3 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                    </svg>
+                </button>
+                </a>
+                <a href="https://www.whatsapp.com/" target="_blank">
+                <button class="p-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                    </svg>
+                </button>
+                </a>
+                <a href="https://www.linkedin.com/" target="_blank">
+                <button class="p-3 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z" />
+                    </svg>
+                </button>
+                </a>
+                <a href="https://www.youtube.com/" target="_blank">
+                <button class="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                    </svg>
+                </button>
+            </a>
+            </div>
+            <div class="mt-4">
+                <label for="share-link" class="block text-sm font-medium text-gray-700 mb-1">Or copy this link:</label>
+                <div class="flex">
+                    <input type="text" id="share-link" value="{{ request.build_absolute_uri }}"
+                        class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        readonly>
+                    <button id="copy-link"
+                        class="px-3 py-2 bg-primary-600 text-white rounded-r-md hover:bg-primary-700 transition-colors">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 flex justify-end">
+            <button type="button" id="close-share"
+                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{% comment %} <!-----------------------------------------------------Add PDF.js scripts-----------------------------------------------------------------------------> {% endcomment %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+
+    
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const bookSlug = '{{ book.slug }}';
+        const relatedBooksContainer = document.getElementById('related-books-container');
+
+        // Function to check for updates
+        function checkForUpdates() {
+            fetch(`/api/book/${bookSlug}/related/`)
+                .then(response => response.json())
+                .then(data => {
+                    updateRelatedBooks(data.related_books);
+                })
+                .catch(error => console.error('Error fetching related books:', error));
+        }
+
+        // Function to update the DOM with new related books
+        function updateRelatedBooks(books) {
+            // If no books, show the no books message
+            if (books.length === 0) {
+                relatedBooksContainer.innerHTML = '<p class="no-books-message">No related books found.</p>';
+                return;
+            }
+
+            // Create HTML for books
+            let booksHTML = '<div class="related-books-grid">';
+
+            books.forEach(book => {
+                booksHTML += `
+                    <div class="book-card" data-book-id="${book.id}">
+                        ${book.image_url
+                        ? `<img src="${book.image_url}" alt="${book.title}" class="book-image">`
+                        : `<div class="no-image-placeholder">No Image</div>`
+                    }
+                        
+                        <h3>${book.title}</h3>
+                        
+                        <p>Categories:
+                            ${book.categories.join(', ')}
+                        </p>
+                        
+                        <a href="/book_details/${book.id}/" class="view-details-btn">View Details</a>
+                    </div>
+                `;
+            });
+
+            booksHTML += '</div>';
+
+            // Only update if content has changed
+            if (booksHTML !== relatedBooksContainer.innerHTML) {
+                relatedBooksContainer.innerHTML = booksHTML;
+            }
+        }
+        checkForUpdates();
+    });
+    
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab navigation
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active', 'border-primary-600', 'text-gray-800'));
+                tabs.forEach(t => t.classList.add('text-gray-500', 'border-transparent'));
+
+                // Add active class to clicked tab
+                tab.classList.add('active', 'border-primary-600', 'text-gray-800');
+                tab.classList.remove('text-gray-500', 'border-transparent');
+
+                // Hide all tab contents
+                tabContents.forEach(content => content.classList.add('hidden'));
+
+                // Show the corresponding tab content
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+
+                // If read tab is selected, initialize PDF viewer
+                if (tabId === 'read') {
+                    initPdfViewer();
+                }
+            });
+        });
+
+        // Read button click
+        document.getElementById('read-btn').addEventListener('click', () => {
+            // Click the read tab
+            document.querySelector('[data-tab="read"]').click();
+        });
+
+        // Initialize star rating
+        const starRating = document.getElementById('star-rating');
+        const ratingValue = 4.5; // This would come from your database
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            star.innerHTML = i <= Math.floor(ratingValue) ? '★' : (i - 0.5 <= ratingValue ? '★' : '☆');
+            star.className = 'text-amber-400';
+            starRating.appendChild(star);
+        }
+
+        // Delete modal functionality
+        const deleteBtn = document.getElementById('delete-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const cancelDelete = document.getElementById('cancel-delete');
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                deleteModal.classList.remove('hidden');
+            });
+        }
+
+        if (cancelDelete) {
+            cancelDelete.addEventListener('click', () => {
+                deleteModal.classList.add('hidden');
+            });
+        }
+
+        // Share modal functionality
+        const shareBtn = document.getElementById('share-btn');
+        const shareModal = document.getElementById('share-modal');
+        const closeShare = document.getElementById('close-share');
+        const copyLink = document.getElementById('copy-link');
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                shareModal.classList.remove('hidden');
+            });
+        }
+
+        if (closeShare) {
+            closeShare.addEventListener('click', () => {
+                shareModal.classList.add('hidden');
+            });
+        }
+
+        if (copyLink) {
+            copyLink.addEventListener('click', () => {
+                const shareLink = document.getElementById('share-link');
+                shareLink.select();
+                document.execCommand('copy');
+                copyLink.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyLink.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Favorite button functionality
+        const favoriteBtn = document.getElementById('favorite-btn');
+        if (favoriteBtn) {
+            favoriteBtn.addEventListener('click', function () {
+                const svg = this.querySelector('svg');
+                if (svg.classList.contains('text-gray-400')) {
+                    svg.classList.remove('text-gray-400');
+                    svg.classList.add('text-red-500');
+                    svg.setAttribute('fill', 'currentColor');
+                } else {
+                    svg.classList.remove('text-red-500');
+                    svg.classList.add('text-gray-400');
+                    svg.setAttribute('fill', 'none');
+                }
+            });
+        }
+
+    // ------------------------------------------------Review form elements---------------------------------------------------------------
+        const addReviewBtn = document.querySelector('#add-review-btn');
+        const reviewForm = document.querySelector('#review-form');
+        const cancelReview = document.querySelector('#cancel-review');
+        const ratingStars = document.querySelectorAll('.rating-star');
+        const ratingInput = document.querySelector('#rating-input');
+        const newReviewForm = document.querySelector('#new-review-form');
+        const errorContainer = document.querySelector('#review-error');
+        const errorMessage = document.querySelector('.error-message');
+
+        // Show review form
+        if (addReviewBtn) {
+            addReviewBtn.addEventListener('click', () => {
+                reviewForm.classList.remove('hidden');
+            });
+        }
+
+        // Hide review form
+        if (cancelReview) {
+            cancelReview.addEventListener('click', () => {
+                reviewForm.classList.add('hidden');
+            });
+        }
+
+        // Handle star rating selection
+        if (ratingStars.length > 0 && ratingInput) {
+            ratingStars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = star.dataset.rating;
+                    ratingInput.value = rating;
+
+                    // Update star colors
+                    ratingStars.forEach(s => {
+                        s.classList.toggle('text-amber-400', s.dataset.rating <= rating);
+                        s.classList.toggle('text-gray-300', s.dataset.rating > rating);
+                    });
+                });
+            });
+        }
+
+        // Function to show error messages
+        function showError(message) {
+            if (errorContainer && errorMessage) {
+                errorContainer.classList.remove('hidden');
+                errorMessage.textContent = message;
+
+                // Auto-hide after 5 seconds
+                setTimeout(() => errorContainer.classList.add('hidden'), 5000);
+            }
+        }
+
+        // Function to hide error messages
+        function hideError() {
+            if (errorContainer) {
+                errorContainer.classList.add('hidden');
+            }
+        }
+
+        // Submit review via AJAX
+        if (newReviewForm) {
+            newReviewForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                hideError();
+
+                const formData = new FormData(newReviewForm);
+                const rating = formData.get('rating');
+
+                if (!rating || rating === '0') {
+                    showError('Please select a rating');
+                    return;
+                }
+
+                fetch(newReviewForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.reload(); // Refresh to show the new review
+                        } else {
+                            showError(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showError('An error occurred while submitting your review. Please try again.');
+                    });
+            });
+        }
+    // ------------------------------------------------Review form elements---------------------------------------------------------------
+
+    
+    // <!-----------------------------------------------------Add PDF.js scripts----------------------------------------------------------------------------->
+        // PDF viewer functionality
+        function initPdfViewer() {
+            const url = '{{ book.pdf_file.url }}'; // Get the PDF URL from your template variable
+            const container = document.getElementById('pdf-container');
+            const pageInfo = document.getElementById('page-info');
+            const prevButton = document.getElementById('prev');
+            const nextButton = document.getElementById('next');
+            const zoomInButton = document.getElementById('zoom-in');
+            const zoomOutButton = document.getElementById('zoom-out');
+            const zoomLevel = document.getElementById('zoom-level');
+            const fullscreenButton = document.getElementById('fullscreen');
+
+            // Clear container
+            container.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg><span class="ml-2">Loading PDF...</span></div>';
+
+            let pdfDoc = null;
+            let pageNum = 1;
+            let scale = 1.0;
+            let canvas = null;
+            let ctx = null;
+
+            // Load the PDF
+            pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                pdfDoc = pdf;
+                pageInfo.textContent = `Page: ${pageNum} of ${pdf.numPages}`;
+
+                // Create canvas if it doesn't exist
+                container.innerHTML = '';
+                canvas = document.createElement('canvas');
+                canvas.className = 'pdf-canvas mx-auto';
+                ctx = canvas.getContext('2d');
+                container.appendChild(canvas);
+
+                // Style the container for scrolling
+                container.style.overflow = 'auto';
+
+                renderPage(pageNum);
+            }).catch(function (error) {
+                console.error('Error loading PDF:', error);
+                container.innerHTML = '<div class="p-4 text-red-600">Error loading PDF. Please try downloading instead.</div>';
+            });
+
+            // Render a specific page
+            function renderPage(num) {
+                pdfDoc.getPage(num).then(function (page) {
+                    const viewport = page.getViewport({ scale });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+
+                    page.render(renderContext);
+                });
+            }
+
+            // Button event handlers
+            if (prevButton) {
+                prevButton.addEventListener('click', function () {
+                    if (pageNum <= 1) return;
+                    pageNum--;
+                    renderPage(pageNum);
+                    pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener('click', function () {
+                    if (pageNum >= pdfDoc.numPages) return;
+                    pageNum++;
+                    renderPage(pageNum);
+                    pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
+                });
+            }
+
+            if (zoomInButton) {
+                zoomInButton.addEventListener('click', function () {
+                    scale += 0.2;
+                    renderPage(pageNum);
+                    zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+                });
+            }
+
+            if (zoomOutButton) {
+                zoomOutButton.addEventListener('click', function () {
+                    if (scale <= 0.2) return;
+                    scale -= 0.2;
+                    renderPage(pageNum);
+                    zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+                });
+            }
+
+            if (fullscreenButton) {
+                fullscreenButton.addEventListener('click', function () {
+                    if (!document.fullscreenElement) {
+                        container.requestFullscreen().catch(err => {
+                            console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                        });
+                    } else {
+                        document.exitFullscreen();
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

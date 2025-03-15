@@ -1,0 +1,305 @@
+[
+    {
+        "model": "reldemo.category",
+        "pk": 1,
+        "fields": {
+            "name": "Science Fiction",
+            "slug": "science-fiction"
+        }
+    },
+    {
+        "model": "reldemo.category",
+        "pk": 2,
+        "fields": {
+            "name": "Mystery",
+            "slug": "mystery"
+        }
+    },
+    {
+        "model": "reldemo.category",
+        "pk": 3,
+        "fields": {
+            "name": "Fantasy",
+            "slug": "fantasy"
+        }
+    },
+    {
+        "model": "reldemo.category",
+        "pk": 4,
+        "fields": {
+            "name": "Biography",
+            "slug": "biography"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 1,
+        "fields": {
+            "title": "Dune",
+            "slug": "dune",
+            "year": "1965-06-01",
+            "isbn": "9780441172719",
+            "story": "A science fiction novel set in a distant future.",
+            "page": 412,
+            "image_url": "https://example.com/dune.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 5,
+            "categories": [1],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 2,
+        "fields": {
+            "title": "Sherlock Holmes: A Study in Scarlet",
+            "slug": "sherlock-holmes-study",
+            "year": "1887-11-01",
+            "isbn": "9780241256652",
+            "story": "The first book in the Sherlock Holmes series.",
+            "page": 188,
+            "image_url": "https://example.com/sherlock.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 3,
+            "categories": [2],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 3,
+        "fields": {
+            "title": "Harry Potter and the Sorcerer's Stone",
+            "slug": "harry-potter-1",
+            "year": "1997-06-26",
+            "isbn": "9780747532699",
+            "story": "A young boy discovers he is a wizard.",
+            "page": 309,
+            "image_url": "https://example.com/harrypotter1.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 4,
+            "categories": [3],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 4,
+        "fields": {
+            "title": "The Martian",
+            "slug": "the-martian",
+            "year": "2011-02-11",
+            "isbn": "9780553418026",
+            "story": "An astronaut stranded on Mars must survive.",
+            "page": 369,
+            "image_url": "https://example.com/themartian.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 6,
+            "categories": [1],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 5,
+        "fields": {
+            "title": "Steve Jobs",
+            "slug": "steve-jobs",
+            "year": "2011-10-24",
+            "isbn": "9781451648539",
+            "story": "A biography of Steve Jobs, co-founder of Apple.",
+            "page": 656,
+            "image_url": "https://example.com/stevejobs.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 2,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+
+    {
+        "model": "reldemo.book",
+        "pk": 6,
+        "fields": {
+            "title": "The Hobbit",
+            "slug": "the-hobbit",
+            "year": "1937-09-21",
+            "isbn": "9780261102217",
+            "story": "A fantasy adventure following Bilbo Baggins' journey.",
+            "page": 310,
+            "image_url": "https://example.com/thehobbit.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 7,
+            "categories": [3],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 7,
+        "fields": {
+            "title": "1984",
+            "slug": "1984",
+            "year": "1949-06-08",
+            "isbn": "9780451524935",
+            "story": "A dystopian novel exploring government surveillance and control.",
+            "page": 328,
+            "image_url": "https://example.com/1984.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 5,
+            "categories": [1],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 8,
+        "fields": {
+            "title": "To Kill a Mockingbird",
+            "slug": "to-kill-a-mockingbird",
+            "year": "1960-07-11",
+            "isbn": "9780061120084",
+            "story": "A novel about racial injustice in the American South.",
+            "page": 281,
+            "image_url": "https://example.com/mockinbird.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 4,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 9,
+        "fields": {
+            "title": "The Da Vinci Code",
+            "slug": "the-da-vinci-code",
+            "year": "2003-03-18",
+            "isbn": "9780307474278",
+            "story": "A mystery thriller involving historical secrets.",
+            "page": 454,
+            "image_url": "https://example.com/davincicode.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 6,
+            "categories": [2],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 10,
+        "fields": {
+            "title": "Pride and Prejudice",
+            "slug": "pride-and-prejudice",
+            "year": "1813-01-28",
+            "isbn": "9780141439518",
+            "story": "A romantic novel about love and social standing.",
+            "page": 279,
+            "image_url": "https://example.com/prideandprejudice.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 3,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 11,
+        "fields": {
+            "title": "The Catcher in the Rye",
+            "slug": "the-catcher-in-the-rye",
+            "year": "1951-07-16",
+            "isbn": "9780316769488",
+            "story": "A story about teenage angst and alienation.",
+            "page": 277,
+            "image_url": "https://example.com/catcherintherye.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 5,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 12,
+        "fields": {
+            "title": "Brave New World",
+            "slug": "brave-new-world",
+            "year": "1932-08-18",
+            "isbn": "9780060850524",
+            "story": "A dystopian novel about a technologically advanced world.",
+            "page": 311,
+            "image_url": "https://example.com/bravenewworld.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 6,
+            "categories": [1],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 13,
+        "fields": {
+            "title": "Moby Dick",
+            "slug": "moby-dick",
+            "year": "1851-11-14",
+            "isbn": "9781503280786",
+            "story": "A classic novel about a man's obsession with a whale.",
+            "page": 635,
+            "image_url": "https://example.com/mobydick.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 4,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 14,
+        "fields": {
+            "title": "The Great Gatsby",
+            "slug": "the-great-gatsby",
+            "year": "1925-04-10",
+            "isbn": "9780743273565",
+            "story": "A novel about the American Dream and high society.",
+            "page": 180,
+            "image_url": "https://example.com/greatgatsby.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 2,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    },
+    {
+        "model": "reldemo.book",
+        "pk": 15,
+        "fields": {
+            "title": "War and Peace",
+            "slug": "war-and-peace",
+            "year": "1869-01-01",
+            "isbn": "9781400079988",
+            "story": "A historical novel about Russia during the Napoleonic era.",
+            "page": 1225,
+            "image_url": "https://example.com/warandpeace.jpg",
+            "pdf_file": "books_pdfs/collaborative_fiction.pdf",
+            "available_copies": 1,
+            "categories": [4],
+            "created_at": "2025-03-13T12:00:00Z",
+            "updated_at": "2025-03-13T12:00:00Z"
+        }
+    }
+]

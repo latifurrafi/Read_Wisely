@@ -1,66 +1,384 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Book Management{% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Link to Custom CSS -->
-    <link href="{% static '/style.css' %}" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Book Management{% endblock %}</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
+  <!-- Link to Custom CSS -->
+  <link href="{% static '/style.css' %}" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom styles that can't be handled by Tailwind */
+    .sidebar-transition {
+      transition: width 0.3s ease-in-out;
+    }
+
+    .content-transition {
+      transition: margin-left 0.3s ease-in-out;
+    }
+  </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">Book Management</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'homepage' %}">Home</a>
-                    </li>
-                    
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add_book' %}">Add Book</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log in</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <!-- Top Navigation -->
+  <nav class="bg-primary-800 text-white fixed w-full z-10">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          {% if user.is_authenticated %}
+          <button id="toggle-btn" class="mr-2 p-1 rounded-md hover:bg-primary-700 focus:outline-none">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+          <a href="{% url 'book_list' %}" class="text-xl font-bold">Read Wisely</a>
         </div>
-    </nav>
-
-    <div class="container mt-4">
-        {% block content %}
-        <!-- Example Card for displaying book info -->
-        <div class="card">
-            <div class="card-header">
-                Book List
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ book.title }}</h5>
-                <h6 class="card-subtitle text-muted mb-2">{{ book.author }}</h6>
-                <p class="card-text">{{ book.description|truncatechars:100 }}</p>
-                <p><strong>Published Year:</strong> {{ book.published_year }}</p>
-                <a href="#" class="btn btn-primary">View Details</a>
-            </div>
-            
+        <div class="hidden md:block">
+          <h5 class="text-white"></h5>
         </div>
-        {% endblock %}
-    </div>
+        <div>
+          <div class="md:flex items-center">
+            <div class="relative" x-data="{ open: false }">
+              <button @click="open = !open"
+                class="flex items-center text-white hover:bg-primary-700 px-3 py-2 rounded-md">
+                <i class="fas fa-user-circle mr-2"></i>
+                <span>{{ user.username }}</span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+              </button>
+              <div x-show="open" @click.away="open = false"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                <a href="{% url 'user_profile' username=user.username %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                <div class="border-t border-gray-100"></div>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
+              </div>
+            </div>
 
-    <div class="footer justify text-center">
-        &copy; 2025 Book Management. All rights reserved.
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
+  </nav>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Sidebar and Main Content -->
+  <div class="flex pt-16 min-h-screen">
+    <!-- Sidebar -->
+    {% if user.is_authenticated %}
+    <aside id="sidebar"
+      class="bg-primary-800 text-white w-64 fixed h-full z-10 sidebar-transition transform -translate-x-full md:translate-x-0">
+      <div class="p-4">
+        <div class="mt-4">
+          <h6 id="test" class="text-xs uppercase font-bold tracking-wider text-gray-400 mb-3">Book Management</h6>
+          <ul class="space-y-2">
+            <li>
+              <a href="{% url 'dashboard' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'book_list' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-home mr-3"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'book_list' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'all_books' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-book mr-3"></i>
+                <span>All Books</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'add_book' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'add_book' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-plus-circle mr-3"></i>
+                <span>Add Book</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'borrowed_book' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'borrowed_books' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-shopping-bag mr-3"></i>
+                <span>Borrowed Books</span>
+              </a>
+
+            </li>
+          </ul>
+
+          <h6 id="test2" class="text-xs uppercase font-bold tracking-wider text-gray-400 mt-6 mb-3">Administration</h6>
+          <ul class="space-y-2">
+            <li>
+              <a href="{% url 'category_list_view' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'manage_categories' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-tags mr-3"></i>
+                <span>Manage Categories</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'book_list' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'reports' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <i class="fas fa-file-alt mr-3"></i>
+                <span>Reports</span>
+              </a>
+            </li>
+            {% if user.is_staff %}
+            <li>
+              <a href="{% url 'admin:index' %}" class="flex items-center p-2 rounded-lg hover:bg-primary-700">
+                <i class="fas fa-cog mr-3"></i>
+                <span>Admin Panel</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main id="content" class="flex-1 p-4 md:p-6 {% if user.is_authenticated %}md:ml-64{% endif %} content-transition">
+      <!-- Mobile header with title and login on same line -->
+      <div class="flex justify-between items-center mb-4 md:hidden">
+        <h1 class="text-2xl font-bold">Book List</h1>
+        <div>
+          {% if user.is_authenticated %}
+          <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" class="p-2 rounded-full bg-primary-600 text-white">
+              <i class="fas fa-user-circle"></i>
+            </button>
+            <div x-show="open" @click.away="open = false"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <a href="{% url 'user_profile' username=user.username %}"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+              <div class="border-t border-gray-100"></div>
+              <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
+            </div>
+          </div>
+          {% else %}
+          <a href="{% url 'login' %}" class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm">Log In</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Alerts/Messages -->
+      {% if messages %}
+      {% for message in messages %}
+      <div
+        class="mb-4 p-4 rounded-md {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %} relative"
+        role="alert">
+        {{ message }}
+        <button type="button" class="absolute top-4 right-4" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- Page Content -->
+      {% block content %}
+      <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+        <div class="flex space-x-2">
+          <a href="{% url 'add_book' %}" class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">Add Book</a>
+          {% comment %} <a href="{% url 'book_list' %}"
+            class="px-3 py-1 border border-primary-600 text-primary-600 rounded-md text-sm">View All</a> {% endcomment %}
+        </div>
+      </div>
+
+      <!-- Example Book Cards with Delete Option -->
+      <h3 class="text-xl font-semibold mb-4">Your Recent Books</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for book in books %}
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-600">{{ book.category }}</span>
+            <div class="relative" x-data="{ open: false }">
+              <button @click="open = !open" class="p-1 rounded-full hover:bg-gray-200">
+                <i class="fas fa-ellipsis-v text-gray-500"></i>
+              </button>
+              <div x-show="open" @click.away="open = false"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                <a href="{% url 'edit_book' book.id %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit</a>
+                <a href="{% url 'view_book' book.id %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Details</a>
+                <div class="border-t border-gray-100"></div>
+                <button class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  onclick="document.getElementById('deleteModal{{ book.id }}').classList.remove('hidden')">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="p-4">
+            <h5 class="text-lg font-semibold">{{ book.title }}</h5>
+            <h6 class="text-gray-500 mb-2">{{ book.author }}</h6>
+            <p class="text-gray-700 mb-3">{{ book.description|truncatechars:100 }}</p>
+            <p class="text-sm"><span class="font-medium">Published Year:</span> {{ book.published_year }}</p>
+          </div>
+          <div class="px-4 py-3 bg-gray-50 flex space-x-2">
+            <a href="{% url 'view_book' book.id %}" class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">View
+              Details</a>
+            <a href="{% url 'edit_book' book.id %}"
+              class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm">Edit</a>
+          </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal{{ book.id }}"
+          class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+          <div class="bg-white rounded-lg max-w-md w-full">
+            <div class="px-4 py-3 border-b border-gray-200">
+              <h5 class="text-lg font-semibold">Confirm Deletion</h5>
+            </div>
+            <div class="p-4">
+              <p>Are you sure you want to delete "{{ book.title }}"? This action cannot be undone.</p>
+            </div>
+            <div class="px-4 py-3 bg-gray-50 flex justify-end space-x-2">
+              <button type="button" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md"
+                onclick="document.getElementById('deleteModal{{ book.id }}').classList.add('hidden')">
+                Cancel
+              </button>
+              <form method="post" action="{% url 'delete_book' book.id %}">
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-2 bg-red-600 text-white rounded-md">Delete Book</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+          <div class="bg-blue-100 text-blue-800 p-4 rounded-md">
+            You haven't added any books yet. <a href="{% url 'add_book' %}" class="text-blue-600 underline">Add your
+              first book</a>.
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endblock %}
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer"
+    class="bg-white py-4 text-center text-gray-600 border-t border-gray-200 {% if user.is_authenticated %}md:ml-64{% endif %} content-transition">
+    &copy; 2025 Book Management. All rights reserved.
+  </footer>
+
+  <!-- Alpine.js for dropdowns -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Sidebar Toggle Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggleBtn = document.getElementById("toggle-btn");
+      const sidebar = document.getElementById("sidebar");
+      const content = document.getElementById("content");
+      const footer = document.getElementById("footer");
+
+      // Check if sidebar is open on mobile
+      let sidebarOpen = false;
+
+      // Function to handle sidebar toggle
+      function toggleSidebar() {
+        if (window.innerWidth < 768) {
+          // Mobile behavior
+          sidebarOpen = !sidebarOpen;
+          if (sidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            document.getElementById("test").style.display = 'block';
+            document.getElementById("test2").style.display = 'block';
+          } else {
+            sidebar.classList.add('-translate-x-full');
+            document.getElementById("test").style.display = 'none';
+            document.getElementById("test2").style.display = 'none';
+
+          }
+        } else {
+          // Desktop behavio
+          document.getElementById("test").style.display = 'none';
+          document.getElementById("test2").style.display = 'none';
+          if (sidebar.classList.contains('w-64')) {
+            // Collapse sidebar
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-16');
+            content.classList.remove('md:ml-64');
+            content.classList.add('md:ml-16');
+            footer.classList.remove('md:ml-64');
+            footer.classList.add('md:ml-16');
+
+            // Hide text in sidebar
+            const sidebarTexts = sidebar.querySelectorAll('span');
+            sidebarTexts.forEach(text => {
+              text.classList.add('hidden');
+            });
+          } else {
+            // Expand sidebar
+            sidebar.classList.remove('w-16');
+            sidebar.classList.add('w-64');
+            content.classList.remove('md:ml-16');
+            content.classList.add('md:ml-64');
+            footer.classList.remove('md:ml-16');
+            footer.classList.add('md:ml-64');
+
+            document.getElementById("test").style.display = 'block';
+            document.getElementById("test2").style.display = 'block';
+
+
+            // Show text in sidebar
+            const sidebarTexts = sidebar.querySelectorAll('span');
+            sidebarTexts.forEach(text => {
+              text.classList.remove('hidden');
+            });
+          }
+        }
+      }
+
+      // Add click event to toggle button
+      toggleBtn.addEventListener("click", toggleSidebar);
+
+      // Handle resize events
+      window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) {
+          sidebar.classList.remove('-translate-x-full');
+        } else if (!sidebarOpen) {
+          sidebar.classList.add('-translate-x-full');
+        }
+      });
+
+      // Initialize sidebar state
+      if (window.innerWidth >= 768) {
+        sidebar.classList.remove('-translate-x-full');
+      }
+    });
+  </script>
+
 </body>
+
 </html>

@@ -1,309 +1,782 @@
 [
-   
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 1,
-        "fields": {
-            "name": "Food",
-            "description": "Food And Dining Expenses"
-        }
+      "model": "reldemo.author",
+      "pk": 6,
+      "fields": {
+        "name": "Gabriel García Márquez",
+        "bio": "Colombian novelist known for 'One Hundred Years of Solitude' and magical realism.",
+        "birth_date": "1927-03-06",
+        "nationality": "Colombian"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 2,
-        "fields": {
-            "name": "Cha",
-            "description": "Feel Better For 24/7.."
-        }
+      "model": "reldemo.author",
+      "pk": 7,
+      "fields": {
+        "name": "Virginia Woolf",
+        "bio": "English writer and modernist pioneer known for her stream of consciousness narrative style.",
+        "birth_date": "1882-01-25",
+        "nationality": "British"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 3,
-        "fields": {
-            "name": "Transport",
-            "description": "Daily commute and travel expenses"
-        }
+      "model": "reldemo.author",
+      "pk": 8,
+      "fields": {
+        "name": "Franz Kafka",
+        "bio": "German-speaking Bohemian novelist and short-story writer known for his existential themes.",
+        "birth_date": "1883-07-03",
+        "nationality": "Czech"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 4,
-        "fields": {
-            "name": "Entertainment",
-            "description": "Movies, concerts, and fun activities"
-        }
+      "model": "reldemo.author",
+      "pk": 9,
+      "fields": {
+        "name": "Agatha Christie",
+        "bio": "English writer known for her detective novels featuring Hercule Poirot and Miss Marple.",
+        "birth_date": "1890-09-15",
+        "nationality": "British"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 5,
-        "fields": {
-            "name": "Healthcare",
-            "description": "Medical checkups and medicines"
-        }
+      "model": "reldemo.author",
+      "pk": 10,
+      "fields": {
+        "name": "Yukio Mishima",
+        "bio": "Japanese author, poet, playwright, actor, and film director known for his avant-garde work.",
+        "birth_date": "1925-01-14",
+        "nationality": "Japanese"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 6,
-        "fields": {
-            "name": "Education",
-            "description": "Books, courses, and tuition fees"
-        }
+      "model": "reldemo.category",
+      "pk": 6,
+      "fields": {
+        "name": "Mystery",
+        "slug": "mystery"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 7,
-        "fields": {
-            "name": "Shopping",
-            "description": "Clothing, accessories, and personal items"
-        }
+      "model": "reldemo.category",
+      "pk": 7,
+      "fields": {
+        "name": "Classics",
+        "slug": "classics"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
-        "pk": 8,
-        "fields": {
-            "name": "Utilities",
-            "description": "Electricity, water, and internet bills"
-        }
+      "model": "reldemo.category",
+      "pk": 8,
+      "fields": {
+        "name": "Biography",
+        "slug": "biography"
+      }
     },
-
     {
-        "model": "reldemo.expensescategory",
+      "model": "reldemo.category",
+      "pk": 9,
+      "fields": {
+        "name": "Magical Realism",
+        "slug": "magical-realism"
+      }
+    },
+    {
+      "model": "reldemo.category",
+      "pk": 10,
+      "fields": {
+        "name": "Philosophy",
+        "slug": "philosophy"
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 11,
+      "fields": {
+        "title": "One Hundred Years of Solitude",
+        "slug": "one-hundred-years-of-solitude",
+        "year": "1967-05-30",
+        "isbn": "9780060883287",
+        "story": "The multi-generational story of the Buendía family in the fictional town of Macondo.",
+        "page": 417,
+        "image": "",
+        "image_url": "https://placeholderimage.com/solitude.jpg",
+        "pdf_file": "",
+        "available_copies": 3,
+        "created_at": "2025-01-05T09:15:00Z",
+        "updated_at": "2025-03-02T10:45:00Z",
+        "language": "Spanish",
+        "author": [6],
+        "categories": [3, 9]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 12,
+      "fields": {
+        "title": "Mrs. Dalloway",
+        "slug": "mrs-dalloway",
+        "year": "1925-05-14",
+        "isbn": "9780156628709",
+        "story": "The novel details a day in the life of Clarissa Dalloway in post-World War I England.",
+        "page": 194,
+        "image": "",
+        "image_url": "https://placeholderimage.com/mrsdalloway.jpg",
+        "pdf_file": "",
+        "available_copies": 2,
+        "created_at": "2025-01-08T14:20:00Z",
+        "updated_at": "2025-03-04T11:30:00Z",
+        "language": "English",
+        "author": [7],
+        "categories": [3, 7]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 13,
+      "fields": {
+        "title": "The Metamorphosis",
+        "slug": "the-metamorphosis",
+        "year": "1915-10-15",
+        "isbn": "9780553213690",
+        "story": "The story of salesman Gregor Samsa, who wakes one morning to find himself inexplicably transformed into a huge insect.",
+        "page": 201,
+        "image": "",
+        "image_url": "https://placeholderimage.com/metamorphosis.jpg",
+        "pdf_file": "",
+        "available_copies": 4,
+        "created_at": "2025-01-12T10:45:00Z",
+        "updated_at": "2025-03-06T15:20:00Z",
+        "language": "German",
+        "author": [8],
+        "categories": [3, 7, 10]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 14,
+      "fields": {
+        "title": "Murder on the Orient Express",
+        "slug": "murder-on-the-orient-express",
+        "year": "1934-01-01",
+        "isbn": "9780062693662",
+        "story": "Detective Hercule Poirot investigates a murder on the famous Orient Express train.",
+        "page": 256,
+        "image": "",
+        "image_url": "https://placeholderimage.com/orientexpress.jpg",
+        "pdf_file": "",
+        "available_copies": 2,
+        "created_at": "2025-01-15T16:30:00Z",
+        "updated_at": "2025-03-08T09:45:00Z",
+        "language": "English",
+        "author": [9],
+        "categories": [6]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 15,
+      "fields": {
+        "title": "The Temple of the Golden Pavilion",
+        "slug": "temple-of-golden-pavilion",
+        "year": "1956-01-01",
+        "isbn": "9780679752707",
+        "story": "A troubled young acolyte at a Buddhist temple becomes obsessed with the temple's beauty and contemplates its destruction.",
+        "page": 270,
+        "image": "",
+        "image_url": "https://placeholderimage.com/goldpavilion.jpg",
+        "pdf_file": "",
+        "available_copies": 1,
+        "created_at": "2025-01-20T11:25:00Z",
+        "updated_at": "2025-03-10T14:55:00Z",
+        "language": "Japanese",
+        "author": [10],
+        "categories": [3, 7, 10]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 16,
+      "fields": {
+        "title": "Love in the Time of Cholera",
+        "slug": "love-in-the-time-of-cholera",
+        "year": "1985-03-01",
+        "isbn": "9780307389732",
+        "story": "A love story spanning fifty years, following a man who waits his entire life to be reunited with his beloved.",
+        "page": 348,
+        "image": "",
+        "image_url": "https://placeholderimage.com/lovetimecholera.jpg",
+        "pdf_file": "",
+        "available_copies": 3,
+        "created_at": "2025-01-25T13:40:00Z",
+        "updated_at": "2025-03-12T10:15:00Z",
+        "language": "Spanish",
+        "author": [6],
+        "categories": [3, 9]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 17,
+      "fields": {
+        "title": "To the Lighthouse",
+        "slug": "to-the-lighthouse",
+        "year": "1927-05-05",
+        "isbn": "9780156907392",
+        "story": "The story centers on the Ramsay family and their visits to the Isle of Skye in Scotland between 1910 and 1920.",
+        "page": 209,
+        "image": "",
+        "image_url": "https://placeholderimage.com/lighthouse.jpg",
+        "pdf_file": "",
+        "available_copies": 2,
+        "created_at": "2025-01-28T15:55:00Z",
+        "updated_at": "2025-03-14T11:35:00Z",
+        "language": "English",
+        "author": [7],
+        "categories": [3, 7]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 18,
+      "fields": {
+        "title": "The Trial",
+        "slug": "the-trial",
+        "year": "1925-04-26",
+        "isbn": "9780805209990",
+        "story": "The story of a man arrested and prosecuted by a remote authority without ever learning the nature of his crime.",
+        "page": 304,
+        "image": "",
+        "image_url": "https://placeholderimage.com/thetrial.jpg",
+        "pdf_file": "",
+        "available_copies": 3,
+        "created_at": "2025-02-02T09:10:00Z",
+        "updated_at": "2025-03-01T13:25:00Z",
+        "language": "German",
+        "author": [8],
+        "categories": [3, 7, 10]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 19,
+      "fields": {
+        "title": "Death on the Nile",
+        "slug": "death-on-the-nile",
+        "year": "1937-11-01",
+        "isbn": "9780062073556",
+        "story": "Hercule Poirot must solve a murder while on vacation in Egypt.",
+        "page": 333,
+        "image": "",
+        "image_url": "https://placeholderimage.com/deathonthenile.jpg",
+        "pdf_file": "",
+        "available_copies": 2,
+        "created_at": "2025-02-05T14:50:00Z",
+        "updated_at": "2025-03-03T16:15:00Z",
+        "language": "English",
+        "author": [9],
+        "categories": [6]
+      }
+    },
+    {
+      "model": "reldemo.book",
+      "pk": 20,
+      "fields": {
+        "title": "Confessions of a Mask",
+        "slug": "confessions-of-a-mask",
+        "year": "1949-07-05",
+        "isbn": "9780811201185",
+        "story": "A semi-autobiographical novel about a young man coming to terms with his homosexuality in Japan during World War II.",
+        "page": 254,
+        "image": "",
+        "image_url": "https://placeholderimage.com/confessionsofamask.jpg",
+        "pdf_file": "",
+        "available_copies": 1,
+        "created_at": "2025-02-09T11:35:00Z",
+        "updated_at": "2025-03-05T09:40:00Z",
+        "language": "Japanese",
+        "author": [10],
+        "categories": [3, 7]
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 6,
+      "fields": {
+        "password": "pbkdf2_sha256$600000$a1b2c3d4e5f6g7h8i9j0$abcdefghijklmnopqrstuvwxyz123456789",
+        "last_login": "2025-03-12T10:15:00Z",
+        "is_superuser": false,
+        "username": "sarah_parker",
+        "first_name": "Sarah",
+        "last_name": "Parker",
+        "email": "sarah.parker@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-01-05T10:00:00Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 7,
+      "fields": {
+        "password": "pbkdf2_sha256$600000$a1b2c3d4e5f6g7h8i9j0$abcdefghijklmnopqrstuvwxyz123456789",
+        "last_login": "2025-03-11T14:25:00Z",
+        "is_superuser": false,
+        "username": "david_miller",
+        "first_name": "David",
+        "last_name": "Miller",
+        "email": "david.miller@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-01-10T11:30:00Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 8,
+      "fields": {
+        "password": "pbkdf2_sha256$600000$a1b2c3d4e5f6g7h8i9j0$abcdefghijklmnopqrstuvwxyz123456789",
+        "last_login": "2025-03-10T09:45:00Z",
+        "is_superuser": false,
+        "username": "emily_jones",
+        "first_name": "Emily",
+        "last_name": "Jones",
+        "email": "emily.jones@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-01-15T13:20:00Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+        "model": "auth.user",
         "pk": 9,
         "fields": {
-            "name": "Savings",
-            "description": "Deposits and emergency funds"
+          "password": "pbkdf2_sha256$600000$a1b2c3d4e5f6g7h8i9j0$abcdefghijklmnopqrstuvwxyz123456789",
+          "last_login": "2025-03-09T16:30:00Z",
+          "is_superuser": false,
+          "username": "james_taylor",
+          "first_name": "James",
+          "last_name": "Taylor",
+          "email": "james.taylor@example.com",
+          "is_staff": false,
+          "is_active": true,
+          "date_joined": "2025-01-20T15:10:00Z",
+          "groups": [],
+          "user_permissions": []
         }
-    },
-
-    {
-        "model": "reldemo.expensescategory",
+      },
+      {
+        "model": "auth.user",
         "pk": 10,
         "fields": {
-            "name": "Gifts",
-            "description": "Birthday, wedding, and celebration gifts"
+          "password": "pbkdf2_sha256$600000$a1b2c3d4e5f6g7h8i9j0$abcdefghijklmnopqrstuvwxyz123456789",
+          "last_login": "2025-03-08T11:55:00Z",
+          "is_superuser": false,
+          "username": "olivia_green",
+          "first_name": "Olivia",
+          "last_name": "Green",
+          "email": "olivia.green@example.com",
+          "is_staff": false,
+          "is_active": true,
+          "date_joined": "2025-01-25T09:40:00Z",
+          "groups": [],
+          "user_permissions": []
         }
-    },
-
-
-   
-
-    {
-        "model": "reldemo.expense",
-        "pk": 1,
-        "fields": {
-            "category": 1,
-            "amount": "24.33",
-            "date": "2021-02-14",
-            "description": "Launch at Italian Restaurant"
-        }
-    },
-
-    {
-        "model": "reldemo.expense",
-        "pk": 2,
-        "fields": {
-            "category": 1,
-            "amount": "12.50",
-            "date": "2021-02-15",
-            "description": "Breakfast at local cafe"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 3,
-        "fields": {
-            "category": 1,
-            "amount": "45.00",
-            "date": "2021-02-16",
-            "description": "Dinner with friends"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 4,
-        "fields": {
-            "category": 2,
-            "amount": "5.00",
-            "date": "2021-02-17",
-            "description": "Evening Cha at roadside stall"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 5,
-        "fields": {
-            "category": 3,
-            "amount": "10.75",
-            "date": "2021-02-18",
-            "description": "Bus fare to office"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 6,
-        "fields": {
-            "category": 3,
-            "amount": "30.00",
-            "date": "2021-02-19",
-            "description": "Cab fare to airport"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 7,
-        "fields": {
-            "category": 4,
-            "amount": "20.00",
-            "date": "2021-02-20",
-            "description": "Movie ticket for latest release"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 8,
-        "fields": {
-            "category": 5,
-            "amount": "60.00",
-            "date": "2021-02-21",
-            "description": "Doctor consultation"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 9,
-        "fields": {
-            "category": 5,
-            "amount": "15.50",
-            "date": "2021-02-22",
-            "description": "Medicine for cold"
-        }
-    },
-    {
-        "model": "reldemo.expense",
-        "pk": 10,
-        "fields": {
-            "category": 6,
-            "amount": "120.00",
-            "date": "2021-02-23",
-            "description": "Online course subscription"
-        }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 11,
         "fields": {
-            "category": 6,
-            "amount": "25.00",
-            "date": "2021-02-24",
-            "description": "Textbooks for university"
+          "user": 6,
+          "book": 11,
+          "borrowed_date": "2025-02-12",
+          "due_date": "2025-03-12",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 12,
         "fields": {
-            "category": 7,
-            "amount": "40.00",
-            "date": "2021-02-25",
-            "description": "New T-shirt and jeans"
+          "user": 7,
+          "book": 12,
+          "borrowed_date": "2025-02-15",
+          "due_date": "2025-03-15",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 13,
         "fields": {
-            "category": 8,
-            "amount": "50.00",
-            "date": "2021-02-26",
-            "description": "Electricity bill payment"
+          "user": 8,
+          "book": 13,
+          "borrowed_date": "2025-01-28",
+          "due_date": "2025-02-28",
+          "returned_date": "2025-02-26",
+          "is_returned": true
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 14,
         "fields": {
-            "category": 8,
-            "amount": "25.00",
-            "date": "2021-02-27",
-            "description": "Internet bill payment"
+          "user": 9,
+          "book": 14,
+          "borrowed_date": "2025-02-18",
+          "due_date": "2025-03-18",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 15,
         "fields": {
-            "category": 9,
-            "amount": "100.00",
-            "date": "2021-02-28",
-            "description": "Monthly savings deposit"
+          "user": 10,
+          "book": 15,
+          "borrowed_date": "2025-02-05",
+          "due_date": "2025-03-05",
+          "returned_date": "2025-03-01",
+          "is_returned": true
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 16,
         "fields": {
-            "category": 9,
-            "amount": "200.00",
-            "date": "2021-03-01",
-            "description": "Emergency fund contribution"
+          "user": 1,
+          "book": 16,
+          "borrowed_date": "2025-02-22",
+          "due_date": "2025-03-22",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 17,
         "fields": {
-            "category": 10,
-            "amount": "30.00",
-            "date": "2021-03-02",
-            "description": "Gift for friend's birthday"
+          "user": 2,
+          "book": 17,
+          "borrowed_date": "2025-01-30",
+          "due_date": "2025-03-02",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 18,
         "fields": {
-            "category": 4,
-            "amount": "15.00",
-            "date": "2021-03-03",
-            "description": "Concert ticket"
+          "user": 3,
+          "book": 18,
+          "borrowed_date": "2025-02-14",
+          "due_date": "2025-03-14",
+          "returned_date": null,
+          "is_returned": false
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 19,
         "fields": {
-            "category": 2,
-            "amount": "3.50",
-            "date": "2021-03-04",
-            "description": "Morning Cha at office"
+          "user": 4,
+          "book": 19,
+          "borrowed_date": "2025-02-09",
+          "due_date": "2025-03-09",
+          "returned_date": "2025-03-07",
+          "is_returned": true
         }
-    },
-    {
-        "model": "reldemo.expense",
+      },
+      {
+        "model": "reldemo.borrowedbook",
         "pk": 20,
         "fields": {
-            "category": 7,
-            "amount": "75.00",
-            "date": "2021-03-05",
-            "description": "New pair of shoes"
+          "user": 5,
+          "book": 20,
+          "borrowed_date": "2025-02-25",
+          "due_date": "2025-03-25",
+          "returned_date": null,
+          "is_returned": false
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 21,
+        "fields": {
+          "title": "The Sound and the Fury",
+          "slug": "the-sound-and-the-fury",
+          "year": "1929-10-07",
+          "isbn": "9780679732242",
+          "story": "The tragic tale of the Compson family, featuring stream of consciousness narrative style.",
+          "page": 326,
+          "image": "",
+          "image_url": "https://placeholderimage.com/soundandfury.jpg",
+          "pdf_file": "",
+          "available_copies": 2,
+          "created_at": "2025-02-12T12:20:00Z",
+          "updated_at": "2025-03-08T10:40:00Z",
+          "language": "English",
+          "author": [3, 7],
+          "categories": [3, 7]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 22,
+        "fields": {
+          "title": "The Castle",
+          "slug": "the-castle",
+          "year": "1926-01-01",
+          "isbn": "9780805211061",
+          "story": "A man known as K. arrives in a village and struggles to gain access to the mysterious authorities in a castle that governs the village.",
+          "page": 416,
+          "image": "",
+          "image_url": "https://placeholderimage.com/thecastle.jpg",
+          "pdf_file": "",
+          "available_copies": 1,
+          "created_at": "2025-02-15T14:35:00Z",
+          "updated_at": "2025-03-09T15:50:00Z",
+          "language": "German",
+          "author": [8],
+          "categories": [3, 7, 10]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 23,
+        "fields": {
+          "title": "The Murder of Roger Ackroyd",
+          "slug": "murder-of-roger-ackroyd",
+          "year": "1926-06-01",
+          "isbn": "9780062073563",
+          "story": "A Hercule Poirot mystery with one of the most famous plot twists in detective fiction.",
+          "page": 288,
+          "image": "",
+          "image_url": "https://placeholderimage.com/rogerackroyd.jpg",
+          "pdf_file": "",
+          "available_copies": 3,
+          "created_at": "2025-02-18T11:25:00Z",
+          "updated_at": "2025-03-10T16:40:00Z",
+          "language": "English",
+          "author": [9],
+          "categories": [6]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 24,
+        "fields": {
+          "title": "The Sailor Who Fell from Grace with the Sea",
+          "slug": "sailor-who-fell-from-grace",
+          "year": "1963-01-01",
+          "isbn": "9780679750154",
+          "story": "A tragic novel exploring themes of adolescent violence and nihilism.",
+          "page": 192,
+          "image": "",
+          "image_url": "https://placeholderimage.com/sailorfell.jpg",
+          "pdf_file": "",
+          "available_copies": 1,
+          "created_at": "2025-02-21T09:50:00Z",
+          "updated_at": "2025-03-11T13:15:00Z",
+          "language": "Japanese",
+          "author": [10],
+          "categories": [3, 7]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 25,
+        "fields": {
+          "title": "Chronicle of a Death Foretold",
+          "slug": "chronicle-of-death-foretold",
+          "year": "1981-01-01",
+          "isbn": "9781400034710",
+          "story": "A novella that tells the story of a murder through multiple perspectives and non-linear narrative.",
+          "page": 128,
+          "image": "",
+          "image_url": "https://placeholderimage.com/chronicledeath.jpg",
+          "pdf_file": "",
+          "available_copies": 2,
+          "created_at": "2025-02-24T15:30:00Z",
+          "updated_at": "2025-03-12T10:55:00Z",
+          "language": "Spanish",
+          "author": [6],
+          "categories": [3, 9]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 26,
+        "fields": {
+          "title": "A Room of One's Own",
+          "slug": "room-of-ones-own",
+          "year": "1929-10-24",
+          "isbn": "9780156787338",
+          "story": "An extended essay arguing for the importance of space and financial independence for women writers.",
+          "page": 112,
+          "image": "",
+          "image_url": "https://placeholderimage.com/roomofown.jpg",
+          "pdf_file": "",
+          "available_copies": 4,
+          "created_at": "2025-02-27T14:05:00Z",
+          "updated_at": "2025-03-13T09:30:00Z",
+          "language": "English",
+          "author": [7],
+          "categories": [5, 10]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 27,
+        "fields": {
+          "title": "Harry Potter and the Prisoner of Azkaban",
+          "slug": "harry-potter-prisoner-azkaban",
+          "year": "1999-07-08",
+          "isbn": "9780439136365",
+          "story": "Harry's third year at Hogwarts, where he learns about his connection to an escaped prisoner.",
+          "page": 435,
+          "image": "",
+          "image_url": "https://placeholderimage.com/harrypotter3.jpg",
+          "pdf_file": "",
+          "available_copies": 5,
+          "created_at": "2025-02-28T11:15:00Z",
+          "updated_at": "2025-03-14T14:25:00Z",
+          "language": "English",
+          "author": [1],
+          "categories": [2]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 28,
+        "fields": {
+          "title": "Spring Snow",
+          "slug": "spring-snow",
+          "year": "1969-01-01",
+          "isbn": "9780679722410",
+          "story": "The first novel in Mishima's Sea of Fertility tetralogy, set in Tokyo during the early 20th century.",
+          "page": 400,
+          "image": "",
+          "image_url": "https://placeholderimage.com/springsnow.jpg",
+          "pdf_file": "",
+          "available_copies": 1,
+          "created_at": "2025-03-02T10:40:00Z",
+          "updated_at": "2025-03-12T15:35:00Z",
+          "language": "Japanese",
+          "author": [10],
+          "categories": [3, 7]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 29,
+        "fields": {
+          "title": "Amerika",
+          "slug": "amerika",
+          "year": "1927-01-01",
+          "isbn": "9780805210644",
+          "story": "An unfinished novel about a young European immigrant named Karl Rossmann in the United States.",
+          "page": 336,
+          "image": "",
+          "image_url": "https://placeholderimage.com/amerika.jpg",
+          "pdf_file": "",
+          "available_copies": 2,
+          "created_at": "2025-03-05T13:20:00Z",
+          "updated_at": "2025-03-13T11:45:00Z",
+          "language": "German",
+          "author": [8],
+          "categories": [3, 7]
+        }
+      },
+      {
+        "model": "reldemo.book",
+        "pk": 30,
+        "fields": {
+          "title": "The ABC Murders",
+          "slug": "abc-murders",
+          "year": "1936-01-06",
+          "isbn": "9780062073587",
+          "story": "Hercule Poirot receives mysterious letters signed 'ABC' before a series of methodical murders.",
+          "page": 256,
+          "image": "",
+          "image_url": "https://placeholderimage.com/abcmurders.jpg",
+          "pdf_file": "",
+          "available_copies": 3,
+          "created_at": "2025-03-08T15:50:00Z",
+          "updated_at": "2025-03-14T09:10:00Z",
+          "language": "English",
+          "author": [9],
+          "categories": [6]
+        }
+      },
+      {
+        "model": "reldemo.borrowedbook",
+        "pk": 21,
+        "fields": {
+            "user": 6,
+            "book": 21,
+            "borrowed_date": "2025-03-01",
+            "due_date": "2025-04-01",
+            "returned_date": null,
+            "is_returned": false
         }
     },
     {
-        "model": "reldemo.expense",
-        "pk": 21,
+        "model": "reldemo.borrowedbook",
+        "pk": 22,
         "fields": {
-            "category": 1,
-            "amount": "18.00",
-            "date": "2021-03-06",
-            "description": "Lunch at a fast food chain"
+            "user": 7,
+            "book": 22,
+            "borrowed_date": "2025-02-02",
+            "due_date": "2025-03-02",
+            "returned_date": "2025-02-28",
+            "is_returned": true
+        }
+    },
+    {
+        "model": "reldemo.borrowedbook",
+        "pk": 23,
+        "fields": {
+            "user": 8,
+            "book": 23,
+            "borrowed_date": "2025-03-05",
+            "due_date": "2025-04-05",
+            "returned_date": null,
+            "is_returned": false
+        }
+    },
+    {
+        "model": "reldemo.borrowedbook",
+        "pk": 24,
+        "fields": {
+            "user": 9,
+            "book": 24,
+            "borrowed_date": "2025-03-10",
+            "due_date": "2025-04-10",
+            "returned_date": "2025-03-20",
+            "is_returned": true
+        }
+    },
+    {
+        "model": "reldemo.borrowedbook",
+        "pk": 25,
+        "fields": {
+            "user": 10,
+            "book": 25,
+            "borrowed_date": "2025-03-12",
+            "due_date": "2025-04-12",
+            "returned_date": null,
+            "is_returned": false
         }
     }
-
 ]
