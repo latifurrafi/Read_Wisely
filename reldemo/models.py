@@ -108,10 +108,7 @@ class BorrowedBook(models.Model):
     
     def __str__(self):
         return f"{self.book.title} borrowed by {self.user.username}"
-
-
-
-
+        
 
 class Review(models.Model):
     book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='reviews')

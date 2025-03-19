@@ -55,7 +55,7 @@
             {% endfor %}
             {% endif %}
 
-            <form method="post" action="{% url 'add_book' %}" enctype="multipart/form-data" id="book-form"
+            <form method="POST" action="{% url 'add_book' %}" enctype="multipart/form-data" id="book-form"
                 class="space-y-6" novalidate>
                 {% csrf_token %}
 
@@ -157,18 +157,24 @@
                                         class="bg-blue-500 text-white px-3 py-2 rounded">+</button>
                                 </div>
                             </div>
-
+                            
                             <!-- Initially hidden dropdown -->
                             <div class="md:col-span-2 hidden" id="categoryDropdownContainer">
                                 <label for="id_categories" class="block text-sm font-medium">Select Category</label>
                                 <div class="border p-2 rounded w-full bg-white">
-                                    {% for category in form.categories.field.queryset %}
-                                    <label class="flex items-center space-x-2 py-1">
-                                        <input type="checkbox" name="categories" value="{{ category.id }}"
-                                            class="form-checkbox text-blue-600">
-                                        <span class="text-gray-700">{{ category.name }}</span>
-                                    </label>
-                                    {% endfor %}
+                                    <!-- Search Input -->
+                                    <input type="text" id="categorySearch" class="border p-2 rounded w-full" 
+                                        placeholder="Search category...">
+                            
+                                    <div id="categoryList" class="max-h-60 overflow-y-auto">
+                                        {% for category in form.categories.field.queryset|slice:":5" %}
+                                        <label class="flex items-center space-x-2 py-1">
+                                            <input type="checkbox" name="categories" value="{{ category.id }}"
+                                                class="form-checkbox text-blue-600">
+                                            <span class="text-gray-700">{{ category.name }}</span>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
 
@@ -370,7 +376,7 @@
                             <li>Use high-quality cover images for better display</li>
                             <li>ISBN format should be either ISBN-10 or ISBN-13</li>
                             <li>Add detailed descriptions to help readers find your book</li>
-                            <li>Use tags to categorize your book and make it more discoverable</li>
+                            <li>Add category to categorize your book and make it more discoverable</li>
                         </ul>
                     </div>
                 </div>
@@ -458,39 +464,36 @@
 
         // -------------------------------------category_Purpose------------------------------------------------------------
 
-        document.getElementById('addCategoryBtn').addEventListener('click', function () {
-            let categoryInput = document.getElementById('id_new_category');
-            let categoryName = categoryInput.value.trim();
-            let dropdownContainer = document.getElementById('categoryDropdownContainer');
-            let selectBox = document.getElementById('id_categories');
-
-            // Show dropdown if hidden
-            if (dropdownContainer.classList.contains('hidden')) {
-                dropdownContainer.classList.remove('hidden');
-                return;
-            }
-
-            if (categoryName) {
-                // Check if category already exists
-                for (let option of selectBox.options) {
-                    if (option.text.toLowerCase() === categoryName.toLowerCase()) {
-                        alert("Category already exists!");
-                        return;
-                    }
+        document.addEventListener("DOMContentLoaded", function () {
+            const addCategoryBtn = document.getElementById("addCategoryBtn");
+            const categoryDropdown = document.getElementById("categoryDropdownContainer");
+            const categorySearch = document.getElementById("categorySearch");
+            const categoryList = document.getElementById("categoryList");
+    
+            addCategoryBtn.addEventListener("click", function () {
+                categoryDropdown.classList.toggle("hidden");
+            });
+    
+            categorySearch.addEventListener("input", function () {
+                const query = categorySearch.value.trim();
+                if (query.length > 0) {
+                    fetch(`/search-category/?q=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            categoryList.innerHTML = "";
+                            data.categories.forEach(category => {
+                                const categoryItem = `
+                                    <label class="flex items-center space-x-2 py-1">
+                                        <input type="checkbox" name="categories" value="${category.id}" 
+                                            class="form-checkbox text-blue-600">
+                                        <span class="text-gray-700">${category.name}</span>
+                                    </label>`;
+                                categoryList.innerHTML += categoryItem;
+                            });
+                        })
+                        .catch(error => console.error("Error fetching categories:", error));
                 }
-
-                // Create new option and add to select box
-                let newOption = document.createElement('option');
-                newOption.value = categoryName;  // Temporary value (handled in views)
-                newOption.text = categoryName;
-                newOption.selected = true;
-                selectBox.appendChild(newOption);
-
-                // Clear input field
-                categoryInput.value = '';
-            } else {
-                alert("Enter a category name first!");
-            }
+            });
         });
         // -------------------------------------category_Purpose------------------------------------------------------------
 
@@ -544,13 +547,12 @@
                             // Add image to preview
                             imagePreview.appendChild(img);
                         }
-
                         reader.readAsDataURL(this.files[0]);
                     }
                 });
             }
 
-            // Form progress indicator (visual only)
+            //-------------------------------------Form progress indicator (visual only)-------------------------------------------
             const form = document.getElementById('book-form');
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');

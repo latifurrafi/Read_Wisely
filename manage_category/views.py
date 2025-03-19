@@ -1,9 +1,26 @@
 from django.shortcuts import render, get_object_or_404
 from reldemo.models import Category, Book
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .serializers import BookSerializer
+
 
 def category_list_view(request):
+    filter_type = request.GET.get('filter')  # Get filter from URL
+
+    if filter_type == 'recent':
+        books = Book.objects.order_by('-created_at')[:10]  # 10 most recent books
+    else:
+        books = Book.objects.all()
+
     category_data = Category.objects.all()
-    return render(request, 'category_list.html', {'category_data': category_data})
+
+    return render(request, 'category_list.html', {
+        'category_data': category_data,
+        'books': books,  # Send books to template
+        'filter_type': filter_type  # Optional: Send filter type for UI updates
+    })
+
 
 def books_by_category_view(request, category_slug):
     category_instance = get_object_or_404(Category, slug=category_slug)
@@ -38,3 +55,18 @@ def categories_wise_search(request, category_slug):
         'category_data': category_data,
         'query': query
     })
+
+def recent_books_view(request):
+    books = Book.objects.all().order_by('-created_at')[:10]  # Get 10 most recent books
+    context = {
+        'books': books,
+        'title': 'Recently Added Books'
+    }
+    return render(request, 'recent_book.html', context)  # Use a separate template for clarity
+
+@api_view(['GET'])
+def recent_book_for_category_list(request):
+    books = Book.objects.all().order_by('-created_at')[:10]
+    serializer = BookSerializer(books, many=True)
+    return Response(serializer.data)
+

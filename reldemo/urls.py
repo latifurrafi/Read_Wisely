@@ -34,5 +34,8 @@ urlpatterns = [
     path('books/<slug:book_slug>/add_review/', views.add_review, name='add_review'),
     path('books/edit_review/<int:review_id>/', views.edit_review, name='edit_review'),
     path('book/<slug:slug>/load-more-reviews/', views.load_more_reviews, name='load_more_reviews'),
-    
+    path('search-category/',views.search_category, name='search_category'),
+    path("add-category/", views.add_category, name="add_category"),
+
+
 ]  

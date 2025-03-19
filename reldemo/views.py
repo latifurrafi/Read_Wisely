@@ -9,13 +9,11 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm
-from .models import BorrowedBook  # Assuming you have a model for borrowed books
 from django.utils import timezone
 from django.db.models import Q
-from datetime import timedelta
 import csv
-from .models import Book, BorrowedBook, Category
-from .models import Book, Review
+from .models import BorrowedBook, Category
+from .models import Review
 from .forms import ReviewForm
 from django.views.decorators.http import require_http_methods
 import json
@@ -24,7 +22,7 @@ import traceback
 from django.db.models import Count
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncMonth
-
+from django.utils.text import slugify
 
 
 def user_profile(request, username):
@@ -98,7 +96,6 @@ def books_acquisition_chart(request):
     books_added_count = [monthly_books.get(month, 0) for month in months_list]  # Fill missing months with 0
 
     return JsonResponse({'chart_labels': months_list, 'chart_data': books_added_count})
-
 
 def register(request):
     if request.method == "POST":
@@ -598,3 +595,31 @@ def load_more_reviews(request, slug):
     ]
 
     return JsonResponse({'reviews': review_list})
+
+def add_category(request):
+    if request.method == "POST":
+        new_category_name = request.POST.get("new_category", "").strip()
+        
+        if new_category_name:
+            # Generate a unique slug
+            base_slug = slugify(new_category_name)
+            slug = base_slug
+            counter = 1
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            category, created = Category.objects.get_or_create(name=new_category_name, defaults={'slug': slug})
+            
+            if created:
+                return JsonResponse({"id": category.id, "name": category.name, "slug": category.slug, "created": True})
+            else:
+                return JsonResponse({"error": "Category already exists"}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def search_category(request):
+    query = request.GET.get("q", "")
+    categories = Category.objects.filter(name__icontains=query)[:10]
+    category_list = [{"id": cat.id, "name": cat.name} for cat in categories]
+    return JsonResponse({"categories": category_list})

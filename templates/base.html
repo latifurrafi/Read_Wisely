@@ -139,6 +139,15 @@
                 <i class="fas fa-tags mr-3"></i>
                 <span>Manage Categories</span>
               </a>
+            </li> 
+            <li>
+              <a href="{% url 'recent_books_view' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'reports' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Recently Added</span>
+              </a>
             </li>
             <li>
               <a href="{% url 'book_list' %}"
