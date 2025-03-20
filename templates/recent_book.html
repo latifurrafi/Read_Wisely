@@ -66,9 +66,9 @@
 <div id="books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
   {% if books %}
     {% for book in books %}
-    <div class="bg-white rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 duration-300 flex flex-col h-full">
+    <div class="  rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 duration-300 flex  h-full">
       <!-- Fixed height image container with consistent dimensions -->
-      <div class="relative w-full h-80 sm:h-64 md:h-72 lg:h-80 overflow-hidden">
+      <div class="relative w-full h-80 sm:h-64 md:h-56 lg:h-64 max-w-xl overflow-hidden   ">
         {% if book.image_url %}
           <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
         {% elif book.image %}
@@ -91,7 +91,7 @@
     
       </div>
       
-      <div class="p-4 flex-grow flex flex-col">
+      <div class="p-4 flex-grow flex flex-col ">
         <!-- Book title and author -->
         <h2 class="font-bold text-gray-900 mb-1 line-clamp-1">{{ book.title }}</h2>
         <p class="text-sm text-gray-600 mb-2">

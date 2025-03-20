@@ -385,6 +385,8 @@
   }
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
   function bookManager() {
     return {
@@ -604,9 +606,41 @@
       },
       
       exportList() {
-        // In a real app, this would generate a CSV or PDF
-        alert("This would export your borrowed books list as a CSV or PDF file.");
-      }
+        // Import jsPDF if using modules
+        const { jsPDF } = window.jspdf; // For CDN
+        const doc = new jsPDF();
+    
+        // Sample data (Replace with actual book data)
+        const books = [
+            { title: "Book 1", author: "Author 1", year: 2023 },
+            { title: "Book 2", author: "Author 2", year: 2022 },
+            { title: "Book 3", author: "Author 3", year: 2021 }
+        ];
+    
+        // Add title
+        doc.text("Borrowed Books List", 10, 10);
+    
+        // Table headers
+        let y = 20;
+        doc.text("Title", 10, y);
+        doc.text("Author", 60, y);
+        doc.text("Year", 110, y);
+        
+        // Draw a line below headers
+        doc.line(10, y + 2, 200, y + 2);
+    
+        // Add book data
+        books.forEach((book, index) => {
+            y += 10;
+            doc.text(book.title, 10, y);
+            doc.text(book.author, 60, y);
+            doc.text(String(book.year), 110, y);
+        });
+    
+        // Save the PDF
+        doc.save("borrowed_books.pdf");
+    }
+    
     }
   }
 </script>

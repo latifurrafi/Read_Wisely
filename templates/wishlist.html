@@ -1,0 +1,20 @@
+<div x-show="open" @click.away="open = false"
+          class="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg z-10">
+          <div class="py-1">
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-book-id="{{ book.id }}"
+              data-status="reading">
+              <span class="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>
+              Currently Reading
+            </a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-book-id="{{ book.id }}"
+              data-status="read">
+              <span class="inline-block w-3 h-3 rounded-full bg-green-400 mr-2"></span>
+              Finished Reading
+            </a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-book-id="{{ book.id }}"
+              data-status="to-read">
+              <span class="inline-block w-3 h-3 rounded-full bg-blue-400 mr-2"></span>
+              Want to Read
+            </a>
+          </div>
+        </div>

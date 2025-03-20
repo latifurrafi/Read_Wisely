@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404
-from reldemo.models import Category, Book
+from reldemo.models import Category, Book, BookStatus
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import BookSerializer
-
+from django.http import JsonResponse
 
 def category_list_view(request):
     filter_type = request.GET.get('filter')  # Get filter from URL
@@ -20,7 +20,6 @@ def category_list_view(request):
         'books': books,  # Send books to template
         'filter_type': filter_type  # Optional: Send filter type for UI updates
     })
-
 
 def books_by_category_view(request, category_slug):
     category_instance = get_object_or_404(Category, slug=category_slug)
@@ -70,3 +69,11 @@ def recent_book_for_category_list(request):
     serializer = BookSerializer(books, many=True)
     return Response(serializer.data)
 
+def update_book_status(request, book_id, status):
+
+    book = get_object_or_404(Book, id=book_id)
+    book_status, created = BookStatus.objects.get_or_create(user=request.user, book=book)
+    book_status.status = status
+    book_status.save()
+
+    return JsonResponse({"messages": "Status Updated", "status": status})

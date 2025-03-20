@@ -58,9 +58,9 @@
         <!-- Left Side: Toggle Button (if authenticated) + Read Wisely -->
         <div class="flex items-center">
           {% if user.is_authenticated %}
-            <button id="toggle-btn" class="mr-2 p-1 rounded-md hover:bg-primary-700 focus:outline-none">
-              <i class="fas fa-bars text-xl"></i>
-            </button>
+          <button id="toggle-btn" class="mr-2 p-1 rounded-md hover:bg-primary-700 focus:outline-none">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
           {% endif %}
           <a href="{% url 'book_list' %}" class="text-xl font-bold">Read Wisely</a>
         </div>
@@ -68,27 +68,27 @@
         <!-- Right Side: User Profile Dropdown (if authenticated) or Login Button (hidden on login page) -->
         <div class="flex items-center">
           {% if user.is_authenticated %}
-            <div class="relative" x-data="{ open: false }">
-              <button @click="open = !open" class="flex items-center text-white hover:bg-primary-700 px-3 py-2 rounded-md">
-                <i class="fas fa-user-circle mr-2"></i>
-                <span>{{ user.username }}</span>
-                <i class="fas fa-chevron-down ml-2 text-xs"></i>
-              </button>
-              <div x-show="open" @click.away="open = false"
-                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                <a href="{% url 'user_profile' username=user.username %}"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                <div class="border-t border-gray-100"></div>
-                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
-              </div>
+          <div class="relative profile-dropdown">
+            <button id="profile-toggle" class="flex items-center text-white hover:bg-primary-700 px-3 py-2 rounded-md">
+              <i class="fas fa-user-circle mr-2"></i>
+              <span>{{ user.username }}</span>
+              <i class="fas fa-chevron-down ml-2 text-xs"></i>
+            </button>
+            <div id="profile-dropdown-content"
+              class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <a href="{% url 'user_profile' username=user.username %}"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+              <div class="border-t border-gray-100"></div>
+              <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log Out</a>
             </div>
+          </div>
           {% elif request.resolver_match.url_name != 'login' %}
-            <a href="{% url 'login' %}" class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm">Log In</a> 
+          <a href="{% url 'login' %}" class="px-3 py-2 rounded-md bg-primary-600 text-white text-sm">Log In</a>
           {% endif %}
         </div>
       </div>
     </div>
-</nav>
+  </nav>
 
   <!-- Sidebar and Main Content -->
   <div class="flex pt-16 min-h-screen">
@@ -127,7 +127,6 @@
                 <i class="fas fa-shopping-bag mr-3"></i>
                 <span>Borrowed Books</span>
               </a>
-
             </li>
           </ul>
 
@@ -139,12 +138,14 @@
                 <i class="fas fa-tags mr-3"></i>
                 <span>Manage Categories</span>
               </a>
-            </li> 
+            </li>
             <li>
               <a href="{% url 'recent_books_view' %}"
                 class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'reports' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Recently Added</span>
               </a>
@@ -281,6 +282,7 @@
 
   <!-- Sidebar Toggle Script -->
   <script>
+    
     document.addEventListener("DOMContentLoaded", function () {
       const toggleBtn = document.getElementById("toggle-btn");
       const sidebar = document.getElementById("sidebar");
@@ -306,7 +308,7 @@
 
           }
         } else {
-          // Desktop behavio
+          // Desktop behavior
           document.getElementById("test").style.display = 'none';
           document.getElementById("test2").style.display = 'none';
           if (sidebar.classList.contains('w-64')) {
@@ -343,6 +345,25 @@
             });
           }
         }
+      }
+
+
+      // Profile dropdown functionality
+      const profileToggle = document.getElementById("profile-toggle");
+      const profileDropdownContent = document.getElementById("profile-dropdown-content");
+
+      if (profileToggle && profileDropdownContent) {
+        profileToggle.addEventListener("click", function (event) {
+          event.preventDefault();
+          profileDropdownContent.classList.toggle("hidden");
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+          if (!event.target.closest(".profile-dropdown") && !profileDropdownContent.classList.contains("hidden")) {
+            profileDropdownContent.classList.add("hidden");
+          }
+        });
       }
 
       // Add click event to toggle button
