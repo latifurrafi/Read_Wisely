@@ -47,14 +47,14 @@
                 <div class="flex justify-between items-center">
                     <a href="{% url 'book_list' %}"
                         class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-black-500" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                         </svg>
-                        <span class="font-medium">Back</span>
+                        <span class="font-bold">Back</span>
                     </a>
-                    <a class="text-2xl font-bold text-gray-800 animated-text">Read Wisely (Dashboard)</a>
+                    <a class="text-2xl font-bold text-gray-600 animated-text">Read Wisely (Dashboard)</a>
 
                     <div class="flex items-center space-x-4">
 
@@ -202,7 +202,7 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for book in recent_books %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ book.title }}</td>
+                                <td class="px-6 py-4 font-medium whitespace-nowrap">{{ book.title }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{% for author in book.author.all %}
                                     {{ author.name }}{% if not forloop.last %}, {% endif %}
                                     {% empty %}
@@ -234,7 +234,6 @@
                     </table>
                 </div>
             </div>
-
         </main>
     </div>
 
