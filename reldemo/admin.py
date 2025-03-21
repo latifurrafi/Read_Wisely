@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib import messages
-from .models import Profile, ExpensesCategory, Expense, Author, Book, BorrowedBook, Category, Review
+from .models import Profile, ExpensesCategory, Expense, Author, Book, BorrowedBook, Category, Review, BookStatus
 
 # Profile Admin
 @admin.register(Profile)
@@ -176,3 +176,10 @@ class ReviewAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+@admin.register(BookStatus)
+class BookStatusAdmin(admin.ModelAdmin):
+    list_display = ('user', 'book', 'status')
+    list_filter = ('status',)
+    search_fields = ('user__username', 'book_title')
+    ordering = ('user', 'book')

@@ -77,3 +77,4 @@ def update_book_status(request, book_id, status):
     book_status.save()
 
     return JsonResponse({"messages": "Status Updated", "status": status})
+

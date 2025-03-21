@@ -39,8 +39,6 @@ class BookForm(forms.ModelForm):
     })
 )
 
-    
-
     class Meta:
         model = Book
         fields = ['title', 'author', 'year', 'isbn', 'story', 'pdf_file', 'page', 'image', 'image_url', 'available_copies', 'categories' , 'language']
@@ -75,10 +73,6 @@ class BookForm(forms.ModelForm):
                 'placeholder': 'Enter available copies...',
                 'class': 'form-control'
             }),
-            # 'categories': forms.TextInput(attrs={
-            #     'placeholder': 'Enter categories of book...',
-            #     'class': 'form-control'
-            # }),
             'language': forms.TextInput(attrs={
                 'placeholder': 'Enter language...',
                 'class': 'form-control'

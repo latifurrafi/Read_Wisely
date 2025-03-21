@@ -12,7 +12,7 @@ from .forms import UserRegisterForm
 from django.utils import timezone
 from django.db.models import Q
 import csv
-from .models import BorrowedBook, Category
+from .models import BorrowedBook, Category, BookStatus
 from .models import Review
 from .forms import ReviewForm
 from django.views.decorators.http import require_http_methods
@@ -66,15 +66,39 @@ def dashboard(request):
 
     labels = [entry['categories__name'] for entry in category_data]
     data = [entry['count'] for entry in category_data]
-    # print(labels)
-    # print('----------------------------------------------------------------------')
-    # print(data)
+
+    recent_books = Book.objects.order_by('-created_at')[:5]  # Fetch the latest 5 books
+
+    books_read = BookStatus.objects.filter(status='read').count()
+    currently_read = BookStatus.objects.filter(status='reading').count()
+    to_be_read = BookStatus.objects.filter(status='to-read').count()
+    
+    book_status_counts = {}
+
+    for book in recent_books:
+        # Count occurrences of each status for this book
+        status_counts = BookStatus.objects.filter(book=book).values('status').annotate(count=Count('status'))
+        
+        # Convert to a dictionary: {status: count}
+        status_dict = {entry['status']: entry['count'] for entry in status_counts}
+        
+        # Determine the most frequent status
+        most_frequent_status = max(status_dict, key=status_dict.get, default='to-read')  # Default to 'to-read' if no status
+        
+        book.most_frequent_status = most_frequent_status
+    print(book_status_counts)
+
     return render(request, 'dashboard.html', {
         'books': Book.objects.all(),
         'labels': json.dumps(labels), 
         'data': json.dumps(data), 
         'labelss': json.dumps(labelss),
         'dataa': json.dumps(dataa),
+        'recent_books': recent_books,
+        'books_read': books_read,
+        'currently_read': currently_read,
+        'to_be_read': to_be_read,
+        # 'book_status_counts': book_status_counts,  # Pass status data to template
     })
 
 def books_acquisition_chart(request):
