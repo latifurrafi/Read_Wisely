@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 {% block title %}{{ book.title }} - Book Details{% endblock %}
 {% load static %}
+
+{% block head_extra %}
+<!-- Performance optimizations -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" as="script">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js" as="script">
+<script>
+    // Preload PDF.js worker
+    const workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.as = 'script';
+    preloadLink.href = workerSrc;
+    document.head.appendChild(preloadLink);
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
     <!-- Back button -->
@@ -392,59 +409,88 @@
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script>
                 let offset = 3;  // Start from the 4th review
+                let isLoading = false;
 
                 $("#load-more-reviews").click(function() {
+                    if (isLoading) return;
+                    
+                    isLoading = true;
+                    const loadingIndicator = $('<div class="text-center py-4"><div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary-600"></div><span class="ml-2">Loading...</span></div>');
+                    
+                    $("#reviews-list").append(loadingIndicator);
+                    
                     $.ajax({
                         url: "{% url 'load_more_reviews' book.slug %}",
                         data: { offset: offset },
                         dataType: "json",
                         success: function(data) {
-                            if (data.reviews.length > 0) {
+                            loadingIndicator.remove();
+                            
+                            if (data.reviews && data.reviews.length > 0) {
+                                // Create a document fragment to improve performance
+                                const fragment = document.createDocumentFragment();
+                                const reviewsList = document.getElementById('reviews-list');
+                                
                                 data.reviews.forEach(review => {
-                                    $("#reviews-list").append(`
-                                        <div class="p-6 bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-700/30 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 group">
-                                            <div class="flex justify-between items-center">
-                                                <div>
-                                                    <h4 class="text-white font-semibold text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300">
-                                                        ${review.user}
-                                                    </h4>
-                                                    <div class="flex items-center mt-2">
-                                                        ${getStarRating(review.rating)}
-                                                    </div>
+                                    const reviewElement = document.createElement('div');
+                                    reviewElement.className = 'p-6 bg-gradient-to-br from-slate-800/40 to-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-700/30 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 group';
+                                    reviewElement.innerHTML = `
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <h4 class="text-white font-semibold text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-300 group-hover:to-blue-300 transition-all duration-300">
+                                                    ${review.user}
+                                                </h4>
+                                                <div class="flex items-center mt-2">
+                                                    ${getStarRating(review.rating)}
                                                 </div>
-                                                <span class="text-xs text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full">
-                                                    ${review.created_at}
-                                                </span>
                                             </div>
-                                            <p class="mt-4 text-slate-300 leading-relaxed">${review.comment}</p>
-                                            <div class="mt-5 flex items-center space-x-4">
-                                                <div class="relative h-12 w-12 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 p-[2px]">
-                                                    <img src="https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}" alt="Reviewer" class="h-full w-full rounded-full border-2 border-slate-800">
-                                                    <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-cyan-400 border-2 border-slate-800"></span>
-                                                </div>
-                                                <div>
-                                                    <span class="text-sm font-medium text-white">${review.user}</span>
-                                                    <p class="text-xs text-cyan-400 flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                                        </svg>
-                                                        Verified Reviewer
-                                                    </p>
-                                                </div>
+                                            <span class="text-xs text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full">
+                                                ${review.created_at}
+                                            </span>
+                                        </div>
+                                        <p class="mt-4 text-slate-300 leading-relaxed">${review.comment}</p>
+                                        <div class="mt-5 flex items-center space-x-4">
+                                            <div class="relative h-12 w-12 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 p-[2px]">
+                                                <img src="https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}" alt="Reviewer" class="h-full w-full rounded-full border-2 border-slate-800">
+                                                <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-cyan-400 border-2 border-slate-800"></span>
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-medium text-white">${review.user}</span>
+                                                <p class="text-xs text-cyan-400 flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Verified Reviewer
+                                                </p>
                                             </div>
                                         </div>
-                                    `);
+                                    `;
+                                    fragment.appendChild(reviewElement);
                                 });
-                                offset += 3;
+                                
+                                reviewsList.appendChild(fragment);
+                                offset += data.reviews.length;
                             } else {
                                 $("#load-more-reviews").hide();  // Hide button if no more reviews
                             }
+                            isLoading = false;
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error loading reviews:", error);
+                            loadingIndicator.remove();
+                            $("#reviews-list").append('<div class="text-red-500 p-4">Error loading reviews. Please try again.</div>');
+                            isLoading = false;
                         }
                     });
                 });
             
-                // Function to generate star rating UI
+                // Function to generate star rating UI with memoization for better performance
+                const starRatingCache = {};
                 function getStarRating(rating) {
+                    if (starRatingCache[rating]) {
+                        return starRatingCache[rating];
+                    }
+                    
                     let stars = '';
                     for (let i = 1; i <= 5; i++) {
                         stars += i <= rating
@@ -455,7 +501,9 @@
                                  <path d="M9.049 2.927c.3-.921 1.602-.921 1.902 0l1.236 3.773 3.976.03c.97.007 1.37 1.251.588 1.81l-3.18 2.24 1.216 3.82c.293.921-.756 1.685-1.588 1.118l-3.236-2.334-3.236 2.334c-.832.567-1.88-.197-1.588-1.118l1.216-3.82-3.18-2.24c-.782-.56-.382-1.803.588-1.81l3.976-.03 1.236-3.773z"/>
                                </svg>`;
                     }
-                    return `<div class="flex">${stars}</div>`;
+                    const result = `<div class="flex">${stars}</div>`;
+                    starRatingCache[rating] = result;
+                    return result;
                 }
             </script>
             
@@ -483,7 +531,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                                d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
                         </svg>
                         <span>Born: {{ author.birth_date|default:"Unknown" }}</span>
                     </div>
@@ -714,21 +762,40 @@
     document.addEventListener('DOMContentLoaded', function () {
         const bookSlug = '{{ book.slug }}';
         const relatedBooksContainer = document.getElementById('related-books-container');
+        let relatedBooksLoaded = false;
 
-        // Function to check for updates
-        function checkForUpdates() {
+        // Function to load related books only when needed
+        function loadRelatedBooks() {
+            if (relatedBooksLoaded) return;
+            
+            // Show loading indicator
+            if (relatedBooksContainer) {
+                relatedBooksContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-8 w-8 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-2">Loading related books...</span></div>';
+            }
+
             fetch(`/api/book/${bookSlug}/related/`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     updateRelatedBooks(data.related_books);
+                    relatedBooksLoaded = true;
                 })
-                .catch(error => console.error('Error fetching related books:', error));
+                .catch(error => {
+                    console.error('Error fetching related books:', error);
+                    if (relatedBooksContainer) {
+                        relatedBooksContainer.innerHTML = '<p class="text-red-500 p-4">Error loading related books. Please try refreshing the page.</p>';
+                    }
+                });
         }
 
         // Function to update the DOM with new related books
         function updateRelatedBooks(books) {
             // If no books, show the no books message
-            if (books.length === 0) {
+            if (!books || books.length === 0) {
                 relatedBooksContainer.innerHTML = '<p class="no-books-message">No related books found.</p>';
                 return;
             }
@@ -740,7 +807,7 @@
                 booksHTML += `
                     <div class="book-card" data-book-id="${book.id}">
                         ${book.image_url
-                        ? `<img src="${book.image_url}" alt="${book.title}" class="book-image">`
+                        ? `<img src="${book.image_url}" alt="${book.title}" class="book-image" loading="lazy">`
                         : `<div class="no-image-placeholder">No Image</div>`
                     }
                         
@@ -756,127 +823,163 @@
             });
 
             booksHTML += '</div>';
-
-            // Only update if content has changed
-            if (booksHTML !== relatedBooksContainer.innerHTML) {
-                relatedBooksContainer.innerHTML = booksHTML;
-            }
+            relatedBooksContainer.innerHTML = booksHTML;
         }
-        checkForUpdates();
+
+        // Add event listener to the related books tab to load data only when needed
+        const relatedBooksTab = document.querySelector('[data-tab="related"]');
+        if (relatedBooksTab) {
+            relatedBooksTab.addEventListener('click', loadRelatedBooks);
+        }
     });
     
     // Configure PDF.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
     document.addEventListener('DOMContentLoaded', function () {
-        // Tab navigation
+        // Tab navigation with performance optimization
         const tabs = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        let activeTab = 'story'; // Default active tab
 
+        // Debounce function to limit function calls
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        // Function to switch tabs efficiently
+        function switchTab(tabId) {
+            if (activeTab === tabId) return; // Don't switch if already active
+            
+            // Remove active class from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('active', 'border-primary-600', 'text-gray-800');
+                t.classList.add('text-gray-500', 'border-transparent');
+            });
+
+            // Add active class to clicked tab
+            const currentTab = document.querySelector(`[data-tab="${tabId}"]`);
+            if (currentTab) {
+                currentTab.classList.add('active', 'border-primary-600', 'text-gray-800');
+                currentTab.classList.remove('text-gray-500', 'border-transparent');
+            }
+
+            // Hide all tab contents
+            tabContents.forEach(content => content.classList.add('hidden'));
+
+            // Show the corresponding tab content
+            const tabContent = document.getElementById(`${tabId}-tab`);
+            if (tabContent) {
+                tabContent.classList.remove('hidden');
+            }
+
+            // If read tab is selected, initialize PDF viewer
+            if (tabId === 'read') {
+                // Use requestAnimationFrame for smoother rendering
+                requestAnimationFrame(() => {
+                    initPdfViewer();
+                });
+            }
+            
+            activeTab = tabId;
+        }
+
+        // Add event listeners to tabs
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                tabs.forEach(t => t.classList.remove('active', 'border-primary-600', 'text-gray-800'));
-                tabs.forEach(t => t.classList.add('text-gray-500', 'border-transparent'));
-
-                // Add active class to clicked tab
-                tab.classList.add('active', 'border-primary-600', 'text-gray-800');
-                tab.classList.remove('text-gray-500', 'border-transparent');
-
-                // Hide all tab contents
-                tabContents.forEach(content => content.classList.add('hidden'));
-
-                // Show the corresponding tab content
                 const tabId = tab.getAttribute('data-tab');
-                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-
-                // If read tab is selected, initialize PDF viewer
-                if (tabId === 'read') {
-                    initPdfViewer();
-                }
+                switchTab(tabId);
             });
         });
 
-        // Read button click
-        document.getElementById('read-btn').addEventListener('click', () => {
-            // Click the read tab
-            document.querySelector('[data-tab="read"]').click();
+        // Read button click - use event delegation for better performance
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'read-btn') {
+                switchTab('read');
+            }
         });
 
-        // Initialize star rating
-        const starRating = document.getElementById('star-rating');
-        const ratingValue = 4.5; // This would come from your database
+        // Initialize star rating with a more efficient approach
+        const initStarRating = () => {
+            const starRating = document.getElementById('star-rating');
+            if (!starRating) return;
+            
+            const ratingValue = 4.5; // This would come from your database
+            starRating.innerHTML = '';
+            
+            // Create stars in a single operation
+            const starsHtml = Array(5).fill(0).map((_, i) => {
+                const starType = i < Math.floor(ratingValue) ? 'full' : 
+                                (i < ratingValue ? 'half' : 'empty');
+                return `<span class="text-amber-400">${starType === 'full' ? '★' : (starType === 'half' ? '★' : '☆')}</span>`;
+            }).join('');
+            
+            starRating.innerHTML = starsHtml;
+        };
 
-        for (let i = 1; i <= 5; i++) {
-            const star = document.createElement('span');
-            star.innerHTML = i <= Math.floor(ratingValue) ? '★' : (i - 0.5 <= ratingValue ? '★' : '☆');
-            star.className = 'text-amber-400';
-            starRating.appendChild(star);
-        }
+        // Initialize components
+        initStarRating();
 
-        // Delete modal functionality
-        const deleteBtn = document.getElementById('delete-btn');
-        const deleteModal = document.getElementById('delete-modal');
-        const cancelDelete = document.getElementById('cancel-delete');
-
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', () => {
-                deleteModal.classList.remove('hidden');
-            });
-        }
-
-        if (cancelDelete) {
-            cancelDelete.addEventListener('click', () => {
-                deleteModal.classList.add('hidden');
-            });
-        }
-
-        // Share modal functionality
-        const shareBtn = document.getElementById('share-btn');
-        const shareModal = document.getElementById('share-modal');
-        const closeShare = document.getElementById('close-share');
-        const copyLink = document.getElementById('copy-link');
-
-        if (shareBtn) {
-            shareBtn.addEventListener('click', () => {
-                shareModal.classList.remove('hidden');
-            });
-        }
-
-        if (closeShare) {
-            closeShare.addEventListener('click', () => {
-                shareModal.classList.add('hidden');
-            });
-        }
-
-        if (copyLink) {
-            copyLink.addEventListener('click', () => {
+        // Modal functionality with event delegation
+        document.addEventListener('click', function(e) {
+            // Delete modal
+            if (e.target && e.target.id === 'delete-btn') {
+                const deleteModal = document.getElementById('delete-modal');
+                if (deleteModal) deleteModal.classList.remove('hidden');
+            }
+            
+            if (e.target && e.target.id === 'cancel-delete') {
+                const deleteModal = document.getElementById('delete-modal');
+                if (deleteModal) deleteModal.classList.add('hidden');
+            }
+            
+            // Share modal
+            if (e.target && e.target.id === 'share-btn') {
+                const shareModal = document.getElementById('share-modal');
+                if (shareModal) shareModal.classList.remove('hidden');
+            }
+            
+            if (e.target && e.target.id === 'close-share') {
+                const shareModal = document.getElementById('share-modal');
+                if (shareModal) shareModal.classList.add('hidden');
+            }
+            
+            // Copy link
+            if (e.target && e.target.id === 'copy-link') {
                 const shareLink = document.getElementById('share-link');
-                shareLink.select();
-                document.execCommand('copy');
-                copyLink.textContent = 'Copied!';
-                setTimeout(() => {
-                    copyLink.textContent = 'Copy';
-                }, 2000);
-            });
-        }
-
-        // Favorite button functionality
-        const favoriteBtn = document.getElementById('favorite-btn');
-        if (favoriteBtn) {
-            favoriteBtn.addEventListener('click', function () {
-                const svg = this.querySelector('svg');
-                if (svg.classList.contains('text-gray-400')) {
-                    svg.classList.remove('text-gray-400');
-                    svg.classList.add('text-red-500');
-                    svg.setAttribute('fill', 'currentColor');
-                } else {
-                    svg.classList.remove('text-red-500');
-                    svg.classList.add('text-gray-400');
-                    svg.setAttribute('fill', 'none');
+                if (shareLink) {
+                    shareLink.select();
+                    document.execCommand('copy');
+                    e.target.textContent = 'Copied!';
+                    setTimeout(() => {
+                        e.target.textContent = 'Copy';
+                    }, 2000);
                 }
-            });
-        }
+            }
+            
+            // Favorite button
+            if (e.target && (e.target.id === 'favorite-btn' || e.target.closest('#favorite-btn'))) {
+                const favoriteBtn = document.getElementById('favorite-btn');
+                const svg = favoriteBtn.querySelector('svg');
+                if (svg) {
+                    if (svg.classList.contains('text-gray-400')) {
+                        svg.classList.remove('text-gray-400');
+                        svg.classList.add('text-red-500');
+                        svg.setAttribute('fill', 'currentColor');
+                    } else {
+                        svg.classList.remove('text-red-500');
+                        svg.classList.add('text-gray-400');
+                        svg.setAttribute('fill', 'none');
+                    }
+                }
+            }
+        });
 
     // ------------------------------------------------Review form elements---------------------------------------------------------------
         const addReviewBtn = document.querySelector('#add-review-btn');
@@ -976,7 +1079,12 @@
     
     // <!-----------------------------------------------------Add PDF.js scripts----------------------------------------------------------------------------->
         // PDF viewer functionality
+        let pdfInitialized = false;
+        
         function initPdfViewer() {
+            if (pdfInitialized) return; // Prevent multiple initializations
+            pdfInitialized = true;
+            
             const url = '{{ book.pdf_file.url }}'; // Get the PDF URL from your template variable
             const container = document.getElementById('pdf-container');
             const pageInfo = document.getElementById('page-info');
@@ -995,9 +1103,13 @@
             let scale = 1.0;
             let canvas = null;
             let ctx = null;
+            let renderTask = null;
+            let pageRendering = false;
+            let pageNumPending = null;
 
             // Load the PDF
-            pdfjsLib.getDocument(url).promise.then(function (pdf) {
+            const loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function (pdf) {
                 pdfDoc = pdf;
                 pageInfo.textContent = `Page: ${pageNum} of ${pdf.numPages}`;
 
@@ -1017,20 +1129,45 @@
                 container.innerHTML = '<div class="p-4 text-red-600">Error loading PDF. Please try downloading instead.</div>';
             });
 
+            // Queue rendering of the page
+            function queueRenderPage(num) {
+                if (pageRendering) {
+                    pageNumPending = num;
+                } else {
+                    renderPage(num);
+                }
+            }
+
             // Render a specific page
             function renderPage(num) {
-                pdfDoc.getPage(num).then(function (page) {
-                    const viewport = page.getViewport({ scale });
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+                pageRendering = true;
+                
+                // Using a timeout to prevent UI freezing
+                setTimeout(() => {
+                    pdfDoc.getPage(num).then(function (page) {
+                        const viewport = page.getViewport({ scale });
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
 
-                    const renderContext = {
-                        canvasContext: ctx,
-                        viewport: viewport
-                    };
+                        const renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
 
-                    page.render(renderContext);
-                });
+                        renderTask = page.render(renderContext);
+                        renderTask.promise.then(function () {
+                            pageRendering = false;
+                            if (pageNumPending !== null) {
+                                // New page rendering is pending
+                                renderPage(pageNumPending);
+                                pageNumPending = null;
+                            }
+                        }).catch(function (error) {
+                            console.error('Error rendering PDF page:', error);
+                            pageRendering = false;
+                        });
+                    });
+                }, 10);
             }
 
             // Button event handlers
@@ -1038,7 +1175,7 @@
                 prevButton.addEventListener('click', function () {
                     if (pageNum <= 1) return;
                     pageNum--;
-                    renderPage(pageNum);
+                    queueRenderPage(pageNum);
                     pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
                 });
             }
@@ -1047,7 +1184,7 @@
                 nextButton.addEventListener('click', function () {
                     if (pageNum >= pdfDoc.numPages) return;
                     pageNum++;
-                    renderPage(pageNum);
+                    queueRenderPage(pageNum);
                     pageInfo.textContent = `Page: ${pageNum} of ${pdfDoc.numPages}`;
                 });
             }
@@ -1055,8 +1192,8 @@
             if (zoomInButton) {
                 zoomInButton.addEventListener('click', function () {
                     scale += 0.2;
-                    renderPage(pageNum);
-                    zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+                    queueRenderPage(pageNum);
+                    if (zoomLevel) zoomLevel.textContent = `${Math.round(scale * 100)}%`;
                 });
             }
 
@@ -1064,8 +1201,8 @@
                 zoomOutButton.addEventListener('click', function () {
                     if (scale <= 0.2) return;
                     scale -= 0.2;
-                    renderPage(pageNum);
-                    zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+                    queueRenderPage(pageNum);
+                    if (zoomLevel) zoomLevel.textContent = `${Math.round(scale * 100)}%`;
                 });
             }
 

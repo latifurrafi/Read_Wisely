@@ -6,6 +6,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Book Management{% endblock %}</title>
+  <!-- Alpine.js for dropdowns -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome Icons -->
@@ -15,6 +17,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
   <!-- Link to Custom CSS -->
   <link href="{% static '/style.css' %}" rel="stylesheet">
+  
+  {% block head_extra %}{% endblock %}
+  
   <script>
     tailwind.config = {
       theme: {
@@ -151,8 +156,8 @@
               </a>
             </li>
             <li>
-              <a href="{% url 'book_list' %}"
-                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'reports' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
+              <a href="{% url 'reports_view' %}"
+                class="flex items-center p-2 rounded-lg {% if request.resolver_match.url_name == 'reports_view' %}bg-primary-700{% else %}hover:bg-primary-700{% endif %}">
                 <i class="fas fa-file-alt mr-3"></i>
                 <span>Reports</span>
               </a>
@@ -276,9 +281,6 @@
     class="bg-white py-4 text-center text-gray-600 border-t border-gray-200 {% if user.is_authenticated %}md:ml-64{% endif %} content-transition">
     &copy; 2025 Book Management. All rights reserved.
   </footer>
-
-  <!-- Alpine.js for dropdowns -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <!-- Sidebar Toggle Script -->
   <script>

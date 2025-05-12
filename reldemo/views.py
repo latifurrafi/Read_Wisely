@@ -12,14 +12,14 @@ from .forms import UserRegisterForm
 from django.utils import timezone
 from django.db.models import Q
 import csv
-from .models import BorrowedBook, Category, BookStatus
+from .models import BorrowedBook, Category, BookStatus, UserPreferences
 from .models import Review
 from .forms import ReviewForm
 from django.views.decorators.http import require_http_methods
 import json
 import logging
 import traceback
-from django.db.models import Count
+from django.db.models import Count, Avg
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncMonth
 from django.utils.text import slugify
@@ -30,8 +30,165 @@ def user_profile(request, username):
     user = get_object_or_404(User, username=username)
     # Fetch the associated profile
     profile = get_object_or_404(Profile, user=user)
-    # Render the profile to a template
-    return render(request, 'profile_details.html', {'Profile': profile})
+    
+    # Get reading statistics
+    currently_reading = BookStatus.objects.filter(user=user, status='reading').count()
+    want_to_read = BookStatus.objects.filter(user=user, status='to-read').count()
+    books_completed = BookStatus.objects.filter(user=user, status='read').count()
+    
+    # Get user's books with their statuses
+    user_books = []
+    book_statuses = BookStatus.objects.filter(user=user).select_related('book').prefetch_related('book__author')
+    for status in book_statuses:
+        book = status.book
+        book.status = status.status
+        user_books.append(book)
+    
+    # Monthly reading progress - Fix: Use the book's created_at instead of BookStatus.updated_at
+    current_year = datetime.now().year
+    monthly_progress_data = (
+        BookStatus.objects.filter(
+            user=user, 
+            status='read', 
+            book__created_at__year=current_year  # Changed from updated_at to book__created_at
+        )
+        .annotate(month=TruncMonth('book__created_at'))  # Changed from updated_at to book__created_at
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    
+    # Convert to array of 12 months (for chart.js)
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthly_progress = [0] * 12
+    
+    for entry in monthly_progress_data:
+        month_idx = entry['month'].month - 1  # 0-based index
+        monthly_progress[month_idx] = entry['count']
+    
+    # Recent activities
+    recent_activities = []
+    
+    # Recent borrowed books
+    borrowed_books = BorrowedBook.objects.filter(user=user).order_by('-borrowed_date')[:5]
+    for book in borrowed_books:
+        if book.is_returned:
+            activity_type = 'returned'
+            description = f"Returned '{book.book.title}'"
+            date = book.returned_date
+        else:
+            activity_type = 'borrowed'
+            description = f"Borrowed '{book.book.title}'"
+            date = book.borrowed_date
+        
+        recent_activities.append({
+            'type': activity_type,
+            'description': description,
+            'date': date,
+        })
+    
+    # Recent reviews
+    reviews = Review.objects.filter(user=user).order_by('-created_at')[:5]
+    for review in reviews:
+        recent_activities.append({
+            'type': 'review',
+            'description': f"Reviewed '{review.book.title}' with {review.rating} stars",
+            'date': review.created_at,
+        })
+    
+    # Recent status changes - Fix: Remove ordering by updated_at
+    status_changes = BookStatus.objects.filter(user=user)[:5]  # Removed order_by('-updated_at')
+    for status in status_changes:
+        if status.status == 'read':
+            activity_description = f"Completed '{status.book.title}'"
+            activity_type = 'completed'
+        elif status.status == 'reading':
+            activity_description = f"Started reading '{status.book.title}'"
+            activity_type = 'started'
+        else:
+            activity_description = f"Added '{status.book.title}' to wishlist"
+            activity_type = 'wishlist'
+            
+        recent_activities.append({
+            'type': activity_type,
+            'description': activity_description,
+            'date': status.book.created_at,  # Use book's created_at as fallback
+        })
+    
+    # Sort activities by date (newest first) and limit to 10
+    recent_activities.sort(key=lambda x: x['date'], reverse=True)
+    recent_activities = recent_activities[:10]
+    
+    # Get user preferences from the UserPreferences model
+    # If not exists, create a new preferences object
+    user_preferences, created = UserPreferences.objects.get_or_create(user=user)
+    
+    # Get favorite categories and authors from user preferences
+    favorite_categories = user_preferences.favorite_categories.all()
+    favorite_authors = user_preferences.favorite_authors.all()
+    reading_goal = user_preferences.reading_goal
+    
+    # If no preferences are set yet, use the most frequent categories and authors as defaults
+    if created or (not favorite_categories.exists() and not favorite_authors.exists()):
+        # Calculate from user's books
+        if user_books:
+            # Get categories from user's books
+            category_counts = {}
+            for book in user_books:
+                for category in book.categories.all():
+                    if category.id in category_counts:
+                        category_counts[category.id] += 1
+                    else:
+                        category_counts[category.id] = 1
+            
+            # Get top 5 categories
+            if category_counts:
+                top_category_ids = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                suggested_categories = Category.objects.filter(id__in=[cat_id for cat_id, _ in top_category_ids])
+                # Add to preferences if no preferences were set before
+                if not favorite_categories.exists():
+                    for category in suggested_categories:
+                        user_preferences.favorite_categories.add(category)
+                    favorite_categories = suggested_categories
+            
+            # Get authors from user's books
+            author_counts = {}
+            for book in user_books:
+                for author in book.author.all():
+                    if author.id in author_counts:
+                        author_counts[author.id] += 1
+                    else:
+                        author_counts[author.id] = 1
+            
+            # Get top 5 authors
+            if author_counts:
+                top_author_ids = sorted(author_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                suggested_authors = Author.objects.filter(id__in=[author_id for author_id, _ in top_author_ids])
+                # Add to preferences if no preferences were set before
+                if not favorite_authors.exists():
+                    for author in suggested_authors:
+                        user_preferences.favorite_authors.add(author)
+                    favorite_authors = suggested_authors
+    
+    # Get all categories and authors for the preferences form
+    all_categories = Category.objects.all()
+    all_authors = Author.objects.all()
+    
+    # Render the profile template with all the gathered data
+    return render(request, 'profile_details.html', {
+        'Profile': profile,
+        'currently_reading': currently_reading,
+        'want_to_read': want_to_read,
+        'books_completed': books_completed,
+        'user_books': user_books,
+        'monthly_progress': json.dumps(monthly_progress),
+        'recent_activities': recent_activities,
+        'favorite_categories': favorite_categories,
+        'favorite_authors': favorite_authors,
+        'all_categories': all_categories,
+        'all_authors': all_authors,
+        'reading_goal': reading_goal,
+    })
 
 def dashboard(request):
     six_months_ago = datetime.today() - timedelta(days=6 * 30)  # Approximate last 6 months
@@ -647,3 +804,245 @@ def search_category(request):
     categories = Category.objects.filter(name__icontains=query)[:10]
     category_list = [{"id": cat.id, "name": cat.name} for cat in categories]
     return JsonResponse({"categories": category_list})
+
+@login_required
+def reports_view(request):
+    """
+    Generate comprehensive reports and statistics for the library
+    """
+    # Get date range parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Base queryset for books
+    books_queryset = Book.objects.all()
+    
+    # Apply date filters if provided
+    if start_date and end_date:
+        books_queryset = books_queryset.filter(created_at__range=[start_date, end_date])
+    
+    # Basic statistics
+    total_books = books_queryset.count()
+    
+    # Books added in the last month
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    books_added_recently = books_queryset.filter(created_at__gte=thirty_days_ago).count()
+    
+    # Reading status statistics
+    status_counts = BookStatus.objects.values('status').annotate(count=Count('id'))
+    status_dict = {item['status']: item['count'] for item in status_counts}
+    
+    currently_reading = status_dict.get('reading', 0)
+    books_completed = status_dict.get('read', 0)
+    
+    # Calculate percentages
+    reading_percentage = round((currently_reading / total_books * 100) if total_books > 0 else 0)
+    completion_percentage = round((books_completed / total_books * 100) if total_books > 0 else 0)
+    
+    # Review statistics
+    reviews = Review.objects.all()
+    total_reviews = reviews.count()
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    
+    # Reading progress over time (last 6 months)
+    six_months_ago = timezone.now() - timedelta(days=180)
+    reading_progress = (
+        BookStatus.objects.filter(
+            status='read', 
+            user=request.user
+        ).filter(
+            # Assuming there's a date field for when the status was set
+            # If not, you might need to adjust this part
+            book__created_at__gte=six_months_ago
+        ).annotate(
+            month=TruncMonth('book__created_at')
+        ).values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    
+    # Generate monthly labels and data
+    months = [(six_months_ago + timedelta(days=30*i)).strftime('%B') for i in range(6)]
+    reading_data = {entry['month'].strftime('%B'): entry['count'] for entry in reading_progress}
+    reading_progress_data = [reading_data.get(month, 0) for month in months]
+    
+    # Category distribution
+    category_distribution = (
+        Category.objects.annotate(book_count=Count('books'))
+        .values('name', 'book_count')
+        .order_by('-book_count')[:7]  # Top 7 categories
+    )
+    
+    category_labels = [entry['name'] for entry in category_distribution]
+    category_data = [entry['book_count'] for entry in category_distribution]
+    
+    # Monthly book acquisitions (current year)
+    current_year = timezone.now().year
+    acquisitions = (
+        Book.objects.filter(created_at__year=current_year)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    
+    # Get all months of the year
+    months_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    acquisition_data = [0] * 12  # Initialize with zeros
+    
+    # Fill in the actual data
+    for entry in acquisitions:
+        month_idx = entry['month'].month - 1  # 0-based index
+        acquisition_data[month_idx] = entry['count']
+    
+    # Top authors
+    top_authors = (
+        Author.objects.annotate(book_count=Count('book'))
+        .values('name', 'book_count')
+        .order_by('-book_count')[:7]  # Top 7 authors
+    )
+    
+    author_labels = [entry['name'] for entry in top_authors]
+    author_data = [entry['book_count'] for entry in top_authors]
+    
+    # Recent activity (mock data - replace with actual activity tracking)
+    # In a real application, you would have an Activity model to track user actions
+    recent_activities = []
+    
+    # Get some recent books to simulate activity
+    recent_books = Book.objects.order_by('-created_at')[:5]
+    
+    # Generate mock activities
+    actions = ['Added', 'Updated', 'Started Reading', 'Finished Reading', 'Reviewed']
+    colors = ['blue', 'purple', 'green', 'yellow', 'red']
+    icons = [
+        'M12 6v6m0 0v6m0-6h6m-6 0H6',  # Added (plus)
+        'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',  # Updated (pencil)
+        'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',  # Reading (book)
+        'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',  # Finished (checkmark)
+        'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',  # Reviewed (star)
+    ]
+    
+    status_colors = ['green', 'yellow', 'blue', 'purple', 'red']
+    statuses = ['Completed', 'In Progress', 'Available', 'Reserved', 'Overdue']
+    
+    category_colors = ['blue', 'green', 'purple', 'yellow', 'red', 'pink', 'gray']
+    
+    # Generate mock activities for demonstration
+    for i, book in enumerate(recent_books):
+        # Create a mock activity
+        activity = {
+            'action': actions[i % len(actions)],
+            'book': book,
+            'date': (timezone.now() - timedelta(days=i*3)).strftime('%b %d, %Y'),
+            'icon': icons[i % len(icons)],
+            'color': colors[i % len(colors)],
+            'status': statuses[i % len(statuses)],
+            'status_color': status_colors[i % len(status_colors)],
+            'category_color': category_colors[i % len(category_colors)]
+        }
+        recent_activities.append(activity)
+    
+    context = {
+        'total_books': total_books,
+        'books_added_recently': books_added_recently,
+        'currently_reading': currently_reading,
+        'books_completed': books_completed,
+        'reading_percentage': reading_percentage,
+        'completion_percentage': completion_percentage,
+        'avg_rating': avg_rating,
+        'total_reviews': total_reviews,
+        'reading_progress_labels': json.dumps(months),
+        'reading_progress_data': json.dumps(reading_progress_data),
+        'category_labels': json.dumps(category_labels),
+        'category_data': json.dumps(category_data),
+        'acquisition_labels': json.dumps(months_list),
+        'acquisition_data': json.dumps(acquisition_data),
+        'author_labels': json.dumps(author_labels),
+        'author_data': json.dumps(author_data),
+        'recent_activities': recent_activities,
+    }
+    
+    return render(request, 'reports.html', context)
+
+@login_required
+def update_profile(request):
+    """Update user profile information"""
+    if request.method == "POST":
+        # Get user and profile
+        user = request.user
+        profile = get_object_or_404(Profile, user=user)
+        
+        # Update user information
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.email = request.POST.get('email', '')
+        user.save()
+        
+        # Update profile information
+        profile.bio = request.POST.get('bio', '')
+        profile.location = request.POST.get('location', '')
+        
+        # Handle date conversion safely
+        birth_date_str = request.POST.get('birth_date', '')
+        if birth_date_str:
+            try:
+                profile.birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass  # Invalid date format, ignore
+        
+        # Handle profile image
+        if 'image' in request.FILES:
+            profile.image = request.FILES['image']
+        
+        profile.save()
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile', username=user.username)
+    
+    # If not POST, redirect to profile page
+    return redirect('user_profile', username=request.user.username)
+
+@login_required
+def update_preferences(request):
+    """Update user reading preferences"""
+    if request.method == "POST":
+        user = request.user
+        
+        # Get or create UserPreferences object
+        user_preferences, created = UserPreferences.objects.get_or_create(user=user)
+        
+        # Get selected categories and authors
+        category_ids = request.POST.getlist('favorite_categories')
+        author_ids = request.POST.getlist('favorite_authors')
+        reading_goal = request.POST.get('reading_goal', 12)
+        
+        # Update reading goal
+        user_preferences.reading_goal = int(reading_goal)
+        user_preferences.save()
+        
+        # Clear existing selections and add new ones
+        user_preferences.favorite_categories.clear()
+        for category_id in category_ids:
+            try:
+                category = Category.objects.get(id=category_id)
+                user_preferences.favorite_categories.add(category)
+            except Category.DoesNotExist:
+                continue
+                
+        user_preferences.favorite_authors.clear()
+        for author_id in author_ids:
+            try:
+                author = Author.objects.get(id=author_id)
+                user_preferences.favorite_authors.add(author)
+            except Author.DoesNotExist:
+                continue
+        
+        # Future ML recommendation data could be updated here
+        # For example, calculating preferred genres based on selections
+        
+        messages.success(request, "Reading preferences updated successfully!")
+        return redirect('user_profile', username=user.username)
+    
+    # If not POST, redirect to profile page
+    return redirect('user_profile', username=request.user.username)

@@ -1,321 +1,488 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ Profile.user.username }}'s Profile</title>
-  <style>
-    :root {
-      --primary: #00f7ff;
-      --secondary: #0051ff;
-      --background: #0a0a1a;
-      --card-bg: rgba(20, 20, 40, 0.7);
-      --text: #ffffff;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Arial', sans-serif;
-    }
-    
-    body {
-      background-color: var(--background);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow-x: hidden;
-      position: relative;
-    }
-    
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at center, var(--secondary) 0%, transparent 70%);
-      opacity: 0.1;
-      z-index: -1;
-    }
-    
-    .grid-bg {
-      position: absolute;
-      width: 150%;
-      height: 150%;
-      top: -25%;
-      left: -25%;
-      background-image: 
-        linear-gradient(rgba(0, 247, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px);
-      background-size: 30px 30px;
-      transform: perspective(500px) rotateX(60deg);
-      animation: grid-move 15s linear infinite;
-      z-index: -2;
-    }
-    
-    @keyframes grid-move {
-      0% {
-        transform: perspective(500px) rotateX(60deg) translateY(0);
-      }
-      100% {
-        transform: perspective(500px) rotateX(60deg) translateY(30px);
-      }
-    }
-    
-    .profile-card {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 40px;
-      width: 90%;
-      max-width: 600px;
-      box-shadow: 0 0 30px rgba(0, 247, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 247, 255, 0.1);
-      position: relative;
-      overflow: hidden;
-      animation: card-appear 1s ease-out forwards;
-      transform: translateY(30px);
-      opacity: 0;
-    }
-    
-    @keyframes card-appear {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-    
-    .profile-card::after {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        60deg,
-        rgba(0, 247, 255, 0) 40%,
-        rgba(0, 247, 255, 0.1) 50%,
-        rgba(0, 247, 255, 0) 60%
-      );
-      z-index: -1;
-      animation: shine 4s infinite;
-    }
-    
-    @keyframes shine {
-      0% {
-        transform: translateX(-100%) translateY(-100%) rotate(25deg);
-      }
-      100% {
-        transform: translateX(100%) translateY(100%) rotate(25deg);
-      }
-    }
-    
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 30px;
-      text-align: center;
-      color: var(--primary);
-      text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
-      position: relative;
-      display: inline-block;
-      width: 100%;
-      animation: text-flicker 5s infinite alternate;
-    }
-    
-    @keyframes text-flicker {
-      0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
-        opacity: 1;
-        text-shadow: 0 0 10px rgba(0, 247, 255, 0.5), 0 0 20px rgba(0, 247, 255, 0.3);
-      }
-      20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
-        opacity: 0.8;
-        text-shadow: none;
-      }
-    }
-    
-    .profile-info {
-      margin-bottom: 25px;
-      padding-left: 15px;
-      border-left: 2px solid var(--primary);
-      transform: translateX(-20px);
-      opacity: 0;
-      animation: slide-in 0.5s ease-out forwards;
-    }
-    
-    .profile-info:nth-child(2) {
-      animation-delay: 0.3s;
-    }
-    
-    .profile-info:nth-child(3) {
-      animation-delay: 0.6s;
-    }
-    
-    .profile-info:nth-child(4) {
-      animation-delay: 0.9s;
-    }
-    
-    @keyframes slide-in {
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    
-    .profile-info strong {
-      color: var(--primary);
-      margin-right: 10px;
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-    
-    .profile-pic-container {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      margin: 0 auto 30px auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(45deg, var(--secondary), var(--primary));
-      box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
-      position: relative;
-      overflow: hidden;
-      animation: pulse 3s infinite;
-    }
-    
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(0, 247, 255, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(0, 247, 255, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(0, 247, 255, 0);
-      }
-    }
-    
-    .profile-pic {
-      width: 92%;
-      height: 92%;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--background);
-    }
-    
-    .profile-pic-placeholder {
-      font-size: 3rem;
-      color: var(--background);
-    }
-    
-    .floating-particles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      overflow: hidden;
-      z-index: -1;
-    }
-    
-    .particle {
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      background-color: var(--primary);
-      border-radius: 50%;
-      opacity: 0.3;
-      animation: float 10s infinite linear;
-    }
-    
-    @keyframes float {
-      0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0;
-      }
-      10% {
-        opacity: 0.5;
-      }
-      90% {
-        opacity: 0.5;
-      }
-      100% {
-        transform: translateY(-100vh) translateX(20px);
-        opacity: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="grid-bg"></div>
-  <div class="floating-particles" id="particles"></div>
-  
-  <div class="profile-card">
-    <div class="profile-pic-container">
-      <!-- If profile picture exists, use it; otherwise, show placeholder -->
-      <img class="profile-pic" src="{{ Profile.image.url }}" alt="Profile Picture">
-      <!-- <div class="profile-pic-placeholder">{{ Profile.user.username.0 }}</div> -->
+{% extends 'base.html' %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+  <!-- Page header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center pb-6 mb-6 border-b border-gray-200">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">{{ Profile.user.username }}'s Profile</h2>
+      <p class="text-gray-500 mt-1">Member since {{ Profile.user.date_joined|date:"F j, Y" }}</p>
     </div>
-    
-    <h1>{{ Profile.user.username }}'s Profile</h1>
-    
-    <div class="profile-info">
-      <p><strong>Bio:</strong> {{ Profile.bio }}</p>
-    </div>
-    
-    <div class="profile-info">
-      <p><strong>Birth Date:</strong> {{ Profile.birth_date }}</p>
-    </div>
-    
-    <div class="profile-info">
-      <p><strong>Location:</strong> {{ Profile.location }}</p>
+    <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
+      <button id="edit-profile-btn" class="px-4 py-2 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700 transition-colors">
+        <i class="fas fa-edit mr-2"></i>Edit Profile
+      </button>
     </div>
   </div>
 
-  <script>
-    // Create floating particles
-    const particlesContainer = document.getElementById('particles');
-    const particleCount = 20;
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Profile Information -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Profile header with avatar -->
+        <div class="p-6 bg-gradient-to-r from-primary-600 to-primary-800 text-white text-center">
+          <div class="mx-auto w-32 h-32 mb-4 rounded-full bg-white p-1 shadow-xl">
+            {% if Profile.image %}
+              <img src="{{ Profile.image.url }}" alt="{{ Profile.user.username }}" class="w-full h-full object-cover rounded-full">
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center bg-gray-200 rounded-full">
+                <i class="fas fa-user text-4xl text-gray-400"></i>
+              </div>
+            {% endif %}
+          </div>
+          <h3 class="text-xl font-bold">{{ Profile.user.first_name }} {{ Profile.user.last_name }}</h3>
+          <p class="text-primary-100">@{{ Profile.user.username }}</p>
+        </div>
+
+        <!-- Profile details -->
+        <div class="p-6">
+          <div class="mb-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-3">Personal Information</h4>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Email</p>
+                <p class="text-gray-800">{{ Profile.user.email }}</p>
+              </div>
+              {% if Profile.birth_date %}
+              <div>
+                <p class="text-sm font-medium text-gray-500">Birth Date</p>
+                <p class="text-gray-800">{{ Profile.birth_date|date:"F j, Y" }}</p>
+              </div>
+              {% endif %}
+              {% if Profile.location %}
+              <div>
+                <p class="text-sm font-medium text-gray-500">Location</p>
+                <p class="text-gray-800">{{ Profile.location }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold text-gray-800 mb-3">About Me</h4>
+            <p class="text-gray-700">
+              {% if Profile.bio %}
+                {{ Profile.bio }}
+              {% else %}
+                No bio information available.
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reading Preferences -->
+      <div class="mt-6 bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 bg-primary-600 text-white">
+          <h3 class="font-semibold">Reading Preferences</h3>
+        </div>
+        <div class="p-6">
+          <div class="mb-4">
+            <h4 class="text-sm font-medium text-gray-500 mb-2">Favorite Categories</h4>
+            <div class="flex flex-wrap gap-2">
+              {% for category in favorite_categories %}
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">{{ category.name }}</span>
+              {% empty %}
+                <p class="text-gray-500 text-sm italic">No favorite categories selected</p>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <div>
+            <h4 class="text-sm font-medium text-gray-500 mb-2">Favorite Authors</h4>
+            <div class="flex flex-wrap gap-2">
+              {% for author in favorite_authors %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">{{ author.name }}</span>
+              {% empty %}
+                <p class="text-gray-500 text-sm italic">No favorite authors selected</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button id="edit-preferences-btn" class="mt-4 px-4 py-2 w-full border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+            Edit Preferences
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle and Right Columns: Reading Stats and Activity -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Reading Progress -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 bg-primary-600 text-white flex justify-between items-center">
+          <h3 class="font-semibold">Reading Progress</h3>
+          <div class="text-sm bg-white text-primary-800 px-2 py-1 rounded-md">
+            {{ books_completed }} books completed
+          </div>
+        </div>
+        <div class="p-6">
+          <!-- Reading Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Currently Reading -->
+            <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-blue-100 p-3 mr-4">
+                  <i class="fas fa-book-reader text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-blue-800 font-medium">Currently Reading</p>
+                  <p class="text-2xl font-bold text-blue-900">{{ currently_reading }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Want to Read -->
+            <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-indigo-100 p-3 mr-4">
+                  <i class="fas fa-bookmark text-indigo-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-indigo-800 font-medium">Want to Read</p>
+                  <p class="text-2xl font-bold text-indigo-900">{{ want_to_read }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Read -->
+            <div class="bg-green-50 rounded-lg p-4 border border-green-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-green-100 p-3 mr-4">
+                  <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-green-800 font-medium">Completed</p>
+                  <p class="text-2xl font-bold text-green-900">{{ books_completed }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Chart -->
+          <div>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Monthly Reading Progress</h4>
+            <div class="h-64">
+              <canvas id="readingProgressChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reading Activity -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 bg-primary-600 text-white">
+          <h3 class="font-semibold">Recent Activity</h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            {% for activity in recent_activities %}
+              <div class="flex items-start p-3 border-b border-gray-100 last:border-0">
+                <div class="rounded-full bg-primary-100 p-2 mr-4">
+                  <i class="fas {% if activity.type == 'borrowed' %}fa-hand-holding{% elif activity.type == 'returned' %}fa-undo{% elif activity.type == 'completed' %}fa-check-double{% elif activity.type == 'review' %}fa-star{% else %}fa-book{% endif %} text-primary-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-gray-800">{{ activity.description }}</p>
+                  <p class="text-xs text-gray-500 mt-1">{{ activity.date }}</p>
+                </div>
+              </div>
+            {% empty %}
+              <div class="text-center py-6">
+                <p class="text-gray-500">No recent activity to display</p>
+                <a href="{% url 'book_list' %}" class="mt-2 inline-block text-primary-600 hover:text-primary-800">Browse books to get started</a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Book Collection -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 bg-primary-600 text-white flex justify-between items-center">
+          <h3 class="font-semibold">My Collection</h3>
+          <div class="flex space-x-2">
+            <a href="{% url 'borrowed_book' %}" class="text-sm bg-white text-primary-800 px-2 py-1 rounded-md hover:bg-primary-50">
+              View All
+            </a>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for book in user_books %}
+              <div class="flex border rounded-lg overflow-hidden">
+                <div class="w-20 h-28 flex-shrink-0">
+                  {% if book.image %}
+                    <img src="{{ book.image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+                  {% elif book.image_url %}
+                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+                  {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <i class="fas fa-book text-gray-400"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="p-3 flex-1">
+                  <h4 class="font-medium text-gray-800 line-clamp-1">{{ book.title }}</h4>
+                  <p class="text-sm text-gray-500 mb-2">{{ book.author.all|join:", " }}</p>
+                  <div class="flex items-center">
+                    <span class="px-2 py-0.5 text-xs rounded-full 
+                      {% if book.status == 'reading' %}bg-blue-100 text-blue-800
+                      {% elif book.status == 'to-read' %}bg-indigo-100 text-indigo-800
+                      {% else %}bg-green-100 text-green-800{% endif %}">
+                      {{ book.status|title }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <div class="md:col-span-2 text-center py-6">
+                <p class="text-gray-500">No books in your collection yet</p>
+                <a href="{% url 'book_list' %}" class="mt-2 inline-block text-primary-600 hover:text-primary-800">Browse books to get started</a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="fixed inset-0 bg-black opacity-50" id="modal-overlay"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-10 relative">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800">Edit Profile</h3>
+        <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <form action="{% url 'update_profile' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <!-- Avatar upload -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Profile Image</label>
+            <div class="flex items-center">
+              <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200 mr-4">
+                {% if Profile.image %}
+                  <img src="{{ Profile.image.url }}" alt="{{ Profile.user.username }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <i class="fas fa-user text-gray-400"></i>
+                  </div>
+                {% endif %}
+              </div>
+              <div>
+                <input type="file" name="image" id="image" class="hidden">
+                <label for="image" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 cursor-pointer inline-block">
+                  Change Image
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Personal Information -->
+          <div class="space-y-4">
+            <!-- First Name -->
+            <div>
+              <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <input type="text" name="first_name" id="first_name" value="{{ Profile.user.first_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            
+            <!-- Last Name -->
+            <div>
+              <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+              <input type="text" name="last_name" id="last_name" value="{{ Profile.user.last_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            
+            <!-- Email -->
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" name="email" id="email" value="{{ Profile.user.email }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            
+            <!-- Birth Date -->
+            <div>
+              <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+              <input type="date" name="birth_date" id="birth_date" value="{{ Profile.birth_date|date:'Y-m-d' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            
+            <!-- Location -->
+            <div>
+              <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input type="text" name="location" id="location" value="{{ Profile.location }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            
+            <!-- Bio -->
+            <div>
+              <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+              <textarea name="bio" id="bio" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">{{ Profile.bio }}</textarea>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end space-x-3">
+            <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Preferences Modal -->
+  <div id="edit-preferences-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="fixed inset-0 bg-black opacity-50" id="preferences-modal-overlay"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-10 relative">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800">Reading Preferences</h3>
+        <button id="close-preferences-modal" class="text-gray-400 hover:text-gray-500">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <form action="{% url 'update_preferences' %}" method="post">
+          {% csrf_token %}
+          
+          <!-- Introduction text for ML recommendations -->
+          <div class="mb-4 text-sm text-gray-600 p-3 bg-blue-50 rounded-md">
+            <p>Your preferences help us personalize your experience and provide better book recommendations using machine learning.</p>
+          </div>
+          
+          <!-- Favorite Categories -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Favorite Categories</label>
+            <select name="favorite_categories" id="favorite_categories" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 h-40">
+              {% for category in all_categories %}
+                <option value="{{ category.id }}" {% if category in favorite_categories %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+            <p class="text-xs text-gray-500 mt-1">
+              <span class="font-medium">Select multiple:</span> Hold Ctrl (Windows) or Command (Mac) while clicking. Or use Shift to select a range.
+            </p>
+          </div>
+          
+          <!-- Favorite Authors -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Favorite Authors</label>
+            <select name="favorite_authors" id="favorite_authors" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 h-40">
+              {% for author in all_authors %}
+                <option value="{{ author.id }}" {% if author in favorite_authors %}selected{% endif %}>{{ author.name }}</option>
+              {% endfor %}
+            </select>
+            <p class="text-xs text-gray-500 mt-1">
+              <span class="font-medium">Select multiple:</span> Hold Ctrl (Windows) or Command (Mac) while clicking. Or use Shift to select a range.
+            </p>
+          </div>
+          
+          <!-- Reading Goal -->
+          <div>
+            <label for="reading_goal" class="block text-sm font-medium text-gray-700 mb-1">Annual Reading Goal (Books)</label>
+            <input type="number" name="reading_goal" id="reading_goal" value="{{ reading_goal }}" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+          </div>
+          
+          <div class="mt-6 flex justify-end space-x-3">
+            <button type="button" id="cancel-preferences" class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700">
+              Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Reading Progress Chart
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('readingProgressChart').getContext('2d');
     
-    for (let i = 0; i < particleCount; i++) {
-      createParticle();
+    // Sample data - replace with actual data from backend
+    const progressChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Books Read',
+          data: {{ monthly_progress|safe }},
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+    
+    // Modal handling for Edit Profile
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const closeModal = document.getElementById('close-modal');
+    const cancelEdit = document.getElementById('cancel-edit');
+    const modalOverlay = document.getElementById('modal-overlay');
+    
+    if (editProfileBtn && editProfileModal) {
+      editProfileBtn.addEventListener('click', function() {
+        editProfileModal.classList.remove('hidden');
+      });
+      
+      [closeModal, cancelEdit, modalOverlay].forEach(element => {
+        if (element) {
+          element.addEventListener('click', function() {
+            editProfileModal.classList.add('hidden');
+          });
+        }
+      });
     }
     
-    function createParticle() {
-      const particle = document.createElement('div');
-      particle.classList.add('particle');
+    // Modal handling for Edit Preferences
+    const editPreferencesBtn = document.getElementById('edit-preferences-btn');
+    const editPreferencesModal = document.getElementById('edit-preferences-modal');
+    const closePreferencesModal = document.getElementById('close-preferences-modal');
+    const cancelPreferences = document.getElementById('cancel-preferences');
+    const preferencesModalOverlay = document.getElementById('preferences-modal-overlay');
+    
+    if (editPreferencesBtn && editPreferencesModal) {
+      editPreferencesBtn.addEventListener('click', function() {
+        editPreferencesModal.classList.remove('hidden');
+      });
       
-      // Random position
-      const posX = Math.random() * 100;
-      const posY = Math.random() * 100;
-      particle.style.left = `${posX}%`;
-      particle.style.top = `${posY}%`;
-      
-      // Random size
-      const size = Math.random() * 4 + 1;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      
-      // Random animation duration and delay
-      const duration = Math.random() * 15 + 10;
-      const delay = Math.random() * 5;
-      particle.style.animationDuration = `${duration}s`;
-      particle.style.animationDelay = `${delay}s`;
-      
-      particlesContainer.appendChild(particle);
-      
-      // Remove and recreate particle after animation ends
-      setTimeout(() => {
-        particle.remove();
-        createParticle();
-      }, (duration + delay) * 100);
+      [closePreferencesModal, cancelPreferences, preferencesModalOverlay].forEach(element => {
+        if (element) {
+          element.addEventListener('click', function() {
+            editPreferencesModal.classList.add('hidden');
+          });
+        }
+      });
     }
-  </script>
-</body>
-</html>
+  });
+</script>
+{% endblock %} 

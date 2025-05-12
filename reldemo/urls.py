@@ -8,6 +8,8 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("login/", views.user_login, name="login"),
     path("logout/", views.user_logout, name="logout"),
+    path('update_profile/', views.update_profile, name='update_profile'),
+    path('update_preferences/', views.update_preferences, name='update_preferences'),
     path("one-to-one/", views.demo_one_to_one, name="one-to-one"),
     path("user/<int:pk>/", views.user, name="user"),
     path("one-to-many/", views.demo_one_to_many, name="one-to-many"),
@@ -36,6 +38,7 @@ urlpatterns = [
     path('book/<slug:slug>/load-more-reviews/', views.load_more_reviews, name='load_more_reviews'),
     path('search-category/',views.search_category, name='search_category'),
     path("add-category/", views.add_category, name="add_category"),
-
-
+    path('book/<int:book_id>/return/', views.return_book, name='return_book'),
+    path('export/borrowed-books/', views.export_borrowed_books, name='export_borrowed_books'),
+    path('reports/', views.reports_view, name='reports_view'),
 ]  

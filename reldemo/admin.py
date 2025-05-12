@@ -1,185 +1,269 @@
 from django.contrib import admin
-from django.utils import timezone
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.utils.html import format_html
-from django.contrib import messages
-from .models import Profile, ExpensesCategory, Expense, Author, Book, BorrowedBook, Category, Review, BookStatus
 
-# Profile Admin
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'bio', 'birth_date', 'location')
+from .models import (
+    Profile, ExpensesCategory, Expense, Author, 
+    Category, Book, BorrowedBook, Review, BookStatus, UserPreferences
+)
 
-# Expenses Category Admin
+
+class ProfileInline(TabularInline):
+    model = Profile
+    can_delete = False
+    verbose_name_plural = "Profile"
+    fields = ('bio', 'image', 'birth_date', 'location')
+    show_change_link = True
+
+
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+    inlines = [ProfileInline]
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active', 'is_superuser', 'date_joined')
+    search_fields = ('username', 'email', 'first_name', 'last_name')
+    ordering = ('username',)
+    filter_horizontal = ('groups', 'user_permissions')
+    readonly_fields = ('date_joined', 'last_login')
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+
+
+class ExpenseInline(TabularInline):
+    model = Expense
+    extra = 1
+    fields = ('amount', 'date', 'description')
+
+
 @admin.register(ExpensesCategory)
-class ExpensesCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
-
-# Expense Admin
-@admin.register(Expense)
-class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('category', 'amount', 'date')
-    list_filter = ('category', 'date')
-
-# Author Admin
-@admin.register(Author)
-class AuthorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'bio',)
-
-# Book Admin
-@admin.register(Book)
-class BookAdmin(admin.ModelAdmin):
-    # Remove 'category' from list_display if it doesn't exist in your Book model
-    list_display = ('title', 'display_authors', 'year', 'isbn', 'available_copies', 'availability_status')
-    # Remove 'category' from list_filter if it doesn't exist in your Book model
-    list_filter = ('available_copies', 'year')
-    search_fields = ('title', 'isbn')
-    list_editable = ('available_copies',)
-    list_per_page = 20
-
-    def display_authors(self, obj):
-        # If 'author' is ManyToManyField
-        return ", ".join([author.name for author in obj.author.all()])
-    
-    display_authors.short_description = 'Author(s)'
-
-    def availability_status(self, obj):
-        if obj.available_copies > 0:
-            return format_html('<span style="color: green; font-weight: bold;">Available</span>')
-        return format_html('<span style="color: red;">Not Available</span>')
-
-    availability_status.short_description = 'Availability'
-
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if change:
-            messages.success(request, f"Book '{obj.title}' was updated successfully!")
-        else:
-            messages.info(request, f"New book '{obj.title}' added successfully!")
-
-    def delete_model(self, request, obj):
-        super().delete_model(request, obj)
-        messages.warning(request, f"Book '{obj.title}' was deleted.")
-
-# Borrowed Book Admin
-@admin.register(BorrowedBook)
-class BorrowedBookAdmin(admin.ModelAdmin):
-    list_display = ('book_title', 'borrower', 'borrowed_date', 'due_date', 'status', 'actions')
-    list_filter = ('is_returned', 'borrowed_date', 'due_date')
-    search_fields = ('book__title', 'user__username', 'user__email')
-    list_per_page = 20
-    date_hierarchy = 'borrowed_date'
-
-    def book_title(self, obj):
-        return obj.book.title
-
-    def borrower(self, obj):
-        return obj.user.username
-
-    def status(self, obj):
-        today = timezone.now().date()
-        if obj.is_returned:
-            return format_html('<span style="color: blue;">Returned on {}</span>', obj.returned_date.strftime('%b %d, %Y'))
-        elif obj.due_date < today:
-            days_overdue = (today - obj.due_date).days
-            return format_html('<span style="color: red; font-weight: bold;">Overdue by {} days</span>', days_overdue)
-        elif (obj.due_date - today).days <= 7:
-            return format_html('<span style="color: orange;">Due soon</span>')
-        return format_html('<span style="color: green;">Active</span>')
-
-    def actions(self, obj):
-        if not obj.is_returned:
-            return format_html(
-                '<a class="button" href="{}">Mark Returned</a>',
-                reverse('admin:mark_as_returned', args=[obj.pk])
-            )
-        return "---"
-
-    # Change `actions` to a list of action method names
-    actions = ['mark_as_returned_action']
-
-    def mark_as_returned_action(self, request, queryset):
-        for obj in queryset:
-            if not obj.is_returned:
-                obj.is_returned = True
-                obj.returned_date = timezone.now().date()
-                obj.save()
-
-                # Update available copies
-                book = obj.book
-                book.available_copies += 1
-                book.save()
-
-                messages.success(request, f"'{obj.book.title}' has been marked as returned.")
-
-    mark_as_returned_action.short_description = "Mark selected as returned"
-
-    def get_urls(self):
-        from django.urls import path
-        urls = super().get_urls()
-        custom_urls = [
-            path(
-                '<path:object_id>/mark-returned/',
-                self.admin_site.admin_view(self.mark_as_returned),
-                name='mark_as_returned',
-            ),
-        ]
-        return custom_urls + urls
-
-    def mark_as_returned(self, request, object_id, *args, **kwargs):
-        from django.shortcuts import redirect
-        borrowed_book = self.get_object(request, object_id)
-        if borrowed_book and not borrowed_book.is_returned:
-            borrowed_book.is_returned = True
-            borrowed_book.returned_date = timezone.now().date()
-            borrowed_book.save()
-
-            # Update available copies
-            book = borrowed_book.book
-            book.available_copies += 1
-            book.save()
-
-            messages.success(request, f"'{borrowed_book.book.title}' has been marked as returned.")
-
-        return redirect('admin:library_borrowedbook_changelist')
-
-# Category Admin
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'book_count')
+class ExpensesCategoryAdmin(ModelAdmin):
+    list_display = ('name', 'description', 'get_expenses_count', 'get_total_expenses')
     search_fields = ('name',)
+    inlines = [ExpenseInline]
+    
+    def get_expenses_count(self, obj):
+        return obj.expense_set.count()
+    get_expenses_count.short_description = 'Expenses Count'
+    
+    def get_total_expenses(self, obj):
+        total = sum(expense.amount for expense in obj.expense_set.all())
+        return f"${total:.2f}"
+    get_total_expenses.short_description = 'Total Expenses'
 
-    def book_count(self, obj):
-        return obj.books.count()
 
-    book_count.short_description = 'Number of Books'
+@admin.register(Expense)
+class ExpenseAdmin(ModelAdmin):
+    list_display = ('category', 'amount', 'date', 'description')
+    list_filter = ('category', 'date', 'amount')
+    search_fields = ('description', 'category__name')
+    date_hierarchy = 'date'
+    list_editable = ('amount', 'description')
 
-# Customize Admin Site
-admin.site.site_header = 'Library Management System'
-admin.site.site_title = 'Library Admin'
-admin.site.index_title = 'Library Administration'
 
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('user', 'book', 'rating', 'created_at')  # Display these fields in the list view
-    list_filter = ('rating', 'created_at')  # Add filters for rating and creation date
-    search_fields = ('user__username', 'book__title', 'comment')  # Enable search by user, book title, and comment
-    ordering = ('-created_at',)  # Order reviews by newest first
-    readonly_fields = ('created_at', 'updated_at')  # Make timestamps read-only
-
+@admin.register(Author)
+class AuthorAdmin(ModelAdmin):
+    list_display = ('name', 'nationality', 'birth_date', 'get_books_count')
+    list_filter = ('nationality', 'birth_date')
+    search_fields = ('name', 'bio', 'nationality')
     fieldsets = (
         (None, {
-            'fields': ('book', 'user', 'rating', 'comment')
+            'fields': ('name', 'nationality')
         }),
-        ('Timestamps', {
+        ('Biographical Information', {
+            'fields': ('bio', 'birth_date'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_books_count(self, obj):
+        return obj.book_set.count()
+    get_books_count.short_description = 'Books Count'
+
+
+@admin.register(Category)
+class CategoryAdmin(ModelAdmin):
+    list_display = ('name', 'slug', 'get_books_count')
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name',)
+    
+    def get_books_count(self, obj):
+        return obj.books.count()
+    get_books_count.short_description = 'Books Count'
+
+
+class ReviewInline(TabularInline):
+    model = Review
+    extra = 0
+    fields = ('user', 'rating', 'comment', 'created_at')
+    readonly_fields = ('created_at',)
+
+
+class BorrowedBookInline(TabularInline):
+    model = BorrowedBook
+    extra = 0
+    fields = ('user', 'borrowed_date', 'due_date', 'returned_date', 'is_returned')
+    readonly_fields = ('borrowed_date',)
+
+
+class BookStatusInline(TabularInline):
+    model = BookStatus
+    extra = 0
+    fields = ('user', 'status')
+
+
+@admin.register(Book)
+class BookAdmin(ModelAdmin):
+    list_display = ('title', 'display_authors', 'year', 'isbn', 'available_copies', 'display_categories')
+    list_filter = ('categories', 'year', 'available_copies', 'language')
+    search_fields = ('title', 'author__name', 'isbn', 'story')
+    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ('created_at', 'updated_at')
+    filter_horizontal = ('author', 'categories')
+    inlines = [BorrowedBookInline, ReviewInline, BookStatusInline]
+    
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'author', 'year', 'isbn', 'language')
+        }),
+        ('Content', {
+            'fields': ('story', 'page', 'categories')
+        }),
+        ('Media', {
+            'fields': ('image', 'image_url', 'pdf_file'),
+            'classes': ('collapse',)
+        }),
+        ('Inventory', {
+            'fields': ('available_copies',)
+        }),
+        ('Metadata', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
+    
+    def display_authors(self, obj):
+        return ", ".join([author.name for author in obj.author.all()])
+    display_authors.short_description = 'Authors'
+    
+    def display_categories(self, obj):
+        return ", ".join([category.name for category in obj.categories.all()])
+    display_categories.short_description = 'Categories'
+
+
+@admin.register(BorrowedBook)
+class BorrowedBookAdmin(ModelAdmin):
+    list_display = ('book_title', 'user_username', 'borrowed_date', 'due_date', 'returned_date', 'is_returned', 'status')
+    list_filter = ('borrowed_date', 'due_date', 'is_returned')
+    search_fields = ('book__title', 'user__username')
+    readonly_fields = ('borrowed_date',)
+    date_hierarchy = 'borrowed_date'
+    list_editable = ('is_returned', 'returned_date')
+    
+    def book_title(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:reldemo_book_change', args=[obj.book.id]),
+            obj.book.title
+        )
+    book_title.short_description = 'Book'
+    
+    def user_username(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:auth_user_change', args=[obj.user.id]),
+            obj.user.username
+        )
+    user_username.short_description = 'User'
+    
+    def status(self, obj):
+        if obj.is_returned:
+            return format_html('<span style="color:green;">Returned</span>')
+        elif obj.is_overdue:
+            return format_html('<span style="color:red;">Overdue</span>')
+        elif obj.is_due_soon:
+            return format_html('<span style="color:orange;">Due Soon</span>')
+        else:
+            return format_html('<span style="color:blue;">Active</span>')
+    status.short_description = 'Status'
+
+
+@admin.register(Review)
+class ReviewAdmin(ModelAdmin):
+    list_display = ('book_title', 'user_username', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('book__title', 'user__username', 'comment')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    def book_title(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:reldemo_book_change', args=[obj.book.id]),
+            obj.book.title
+        )
+    book_title.short_description = 'Book'
+    
+    def user_username(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:auth_user_change', args=[obj.user.id]),
+            obj.user.username
+        )
+    user_username.short_description = 'User'
+
 
 @admin.register(BookStatus)
-class BookStatusAdmin(admin.ModelAdmin):
-    list_display = ('user', 'book', 'status')
+class BookStatusAdmin(ModelAdmin):
+    list_display = ('book_title', 'user_username', 'status')
     list_filter = ('status',)
-    search_fields = ('user__username', 'book_title')
-    ordering = ('user', 'book')
+    search_fields = ('book__title', 'user__username')
+    list_editable = ('status',)
+    
+    def book_title(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:reldemo_book_change', args=[obj.book.id]),
+            obj.book.title
+        )
+    book_title.short_description = 'Book'
+    
+    def user_username(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:auth_user_change', args=[obj.user.id]),
+            obj.user.username
+        )
+    user_username.short_description = 'User'
+
+
+@admin.register(UserPreferences)
+class UserPreferencesAdmin(ModelAdmin):
+    list_display = ('user_username', 'reading_goal', 'favorite_category_count', 'favorite_author_count')
+    search_fields = ('user__username',)
+    filter_horizontal = ('favorite_categories', 'favorite_authors')
+    
+    def user_username(self, obj):
+        return format_html('<a href="{}">{}</a>',
+            reverse('admin:auth_user_change', args=[obj.user.id]),
+            obj.user.username
+        )
+    user_username.short_description = 'User'
+    
+    def favorite_category_count(self, obj):
+        return obj.favorite_categories.count()
+    favorite_category_count.short_description = 'Categories'
+    
+    def favorite_author_count(self, obj):
+        return obj.favorite_authors.count()
+    favorite_author_count.short_description = 'Authors'
+
+
+# Unregister the default User admin and register the custom one
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

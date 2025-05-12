@@ -33,7 +33,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
+    'unfold',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +46,35 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5', 
 ]
+
+# Unfold admin settings
+UNFOLD = {
+    "SITE_TITLE": "Read Wisely Admin",
+    "SITE_HEADER": "Read Wisely",
+    "SITE_URL": "/",
+    "SITE_ICON": None,  # Set to an icon if you have one
+    "STYLES": [
+        # Additional stylesheets for customization
+    ],
+    "SCRIPTS": [
+        # Additional scripts for customization
+    ],
+    "COLORS": {
+        "primary": {
+            "50": "rgb(250, 245, 255)",
+            "100": "rgb(243, 232, 255)",
+            "200": "rgb(233, 213, 255)", 
+            "300": "rgb(216, 180, 254)", 
+            "400": "rgb(192, 132, 252)", 
+            "500": "rgb(168, 85, 247)",
+            "600": "rgb(147, 51, 234)", 
+            "700": "rgb(126, 34, 206)", 
+            "800": "rgb(107, 33, 168)", 
+            "900": "rgb(88, 28, 135)",
+            "950": "rgb(59, 7, 100)",
+        },
+    },
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -125,6 +155,18 @@ USE_I18N = True
 
 USE_TZ = True
 
+USE_L10N = True
+
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('es', _('Spanish')),
+    ('fr', _('French')),
+    ('de', _('German')),
+    ('bn', _('Bangla')),
+]
+
 
 
 
@@ -147,73 +189,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-
-JAZZMIN_SETTINGS = {
-    "site_title": "My Admin",
-    "site_header": "Admin Panel",
-    "site_brand": "MyBrand",
-    "welcome_sign": "Welcome to the Admin Panel",
-    "copyright": "MyCompany",
-    
-    # Enable the UI builder
-    "show_ui_builder": True,
-
-    # Sidebar settings
-    "sidebar_nav_compact": True,  # Make sidebar more compact
-    "show_sidebar": True,
-    
-    # Enable language chooser
-    "language_chooser": True,
-
-    # Customize the color scheme (you can define custom colors)
-    "theme": "dark",  # Options: light, dark
-    
-    # Navigation order
-    "order_with_respect_to": ["auth", "myapp.ModelName", "myapp.AnotherModel"],
-
-    # Icons for menu items
-    "icons": {
-        "auth.user": "fas fa-users",  # Add icons to models
-        "myapp.mymodel": "fas fa-book",
-    },
-
-    # Other Jazzmin settings...
-    "messages": {
-        "success": {
-            "bg_color": "#4BB543",  # Green background for success
-            "color": "#ffffff",  # White text color
-            "icon": "fas fa-check-circle",  # Success icon
-        },
-        "warning": {
-            "bg_color": "#FFA500",  # Orange background for warnings
-            "color": "#ffffff",  # White text color
-            "icon": "fas fa-exclamation-triangle",  # Warning icon
-        },
-        "info": {
-            "bg_color": "#17a2b8",  # Info blue background
-            "color": "#ffffff",  # White text color
-            "icon": "fas fa-info-circle",  # Info icon
-        },
-        "error": {
-            "bg_color": "#dc3545",  # Red background for errors
-            "color": "#ffffff",  # White text color
-            "icon": "fas fa-times-circle",  # Error icon
-        },
-    },
-}
-
-
-USE_I18N = True
-USE_L10N = True
-
-from django.utils.translation import gettext_lazy as _
-
-LANGUAGES = [
-    ('en', _('English')),
-    ('es', _('Spanish')),
-    ('fr', _('French')),
-    ('de', _('German')),
-    ('bn', _('Bangla')),
-]

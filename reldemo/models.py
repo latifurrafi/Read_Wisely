@@ -3,7 +3,11 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.timezone import now  # Import 'now' correctly
 from django.db.models import Count
-
+from django.db.models import Q
+from django.core.validators import FileExtensionValidator
+from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+from .validators import validate_file_size
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -60,26 +64,68 @@ class Category(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.ManyToManyField(Author)
-    slug = models.SlugField(max_length=200, unique=True, blank=True, null=True)  # TEMPORARILY allow null
+    slug = models.SlugField(max_length=200, unique=True, blank=True, null=True)
     year = models.DateField()
     isbn = models.CharField(max_length=13)
-    story = models.TextField()  # Changed to TextField for longer descriptions
-    page = models.IntegerField()  # Changed to IntegerField for numeric values
-    image = models.ImageField(upload_to='book_images/', null=True, blank=True)  # File upload field
-    image_url = models.URLField(max_length=500, blank=True, null=True)  # New field for image URL
-    pdf_file = models.FileField(upload_to='books_pdfs/', default='default.pdf')
+    story = models.TextField()
+    page = models.IntegerField()
+    image = models.ImageField(
+        upload_to='book_images/',
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif']),
+            validate_file_size
+        ]
+    )
+    image_url = models.URLField(max_length=500, blank=True, null=True)
+    pdf_file = models.FileField(
+        upload_to='books_pdfs/',
+        default='default.pdf',
+        validators=[
+            FileExtensionValidator(allowed_extensions=['pdf']),
+            validate_file_size
+        ]
+    )
     available_copies = models.IntegerField(default=1)
     categories = models.ManyToManyField(Category, related_name='books')
-    created_at = models.DateTimeField(auto_now_add=True)  # Add default=now
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     language = models.CharField(max_length=30)
-    
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['title']),
+            models.Index(fields=['isbn']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def clean(self):
+        if self.available_copies < 0:
+            raise ValidationError('Available copies cannot be negative.')
+        if not self.slug:
+            self.slug = slugify(self.title)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Clean up files when deleting the book
+        if self.image:
+            self.image.delete(save=False)
+        if self.pdf_file:
+            self.pdf_file.delete(save=False)
+        super().delete(*args, **kwargs)
+
     def get_related_books(self, limit=3):
-        # Find related books based on shared categories
-        related_books = Book.objects.filter(
+        # Optimize query by using prefetch_related and annotate to sort by relevance
+        return Book.objects.prefetch_related('categories', 'author').filter(
             categories__in=self.categories.all()
-        ).exclude(id=self.id).distinct()[:limit]
-        return related_books
+        ).exclude(id=self.id).annotate(
+            common_categories=Count('categories', filter=Q(categories__in=self.categories.all()))
+        ).order_by('-common_categories', '-created_at')[:limit]
 
     def __str__(self):
         return self.title
@@ -141,3 +187,25 @@ class BookStatus(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.book.title} - {self.status}"
+
+
+class UserPreferences(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
+    favorite_categories = models.ManyToManyField(Category, blank=True, related_name='favorited_by')
+    favorite_authors = models.ManyToManyField(Author, blank=True, related_name='favorited_by')
+    reading_goal = models.PositiveIntegerField(default=12)
+    
+    # Fields for ML recommendations
+    preferred_genres = models.TextField(blank=True, help_text="JSON data of preferred genres with weights")
+    recommendation_history = models.TextField(blank=True, help_text="JSON data of recommendation history")
+    
+    def __str__(self):
+        return f"{self.user.username}'s Preferences"
+    
+    def get_top_categories(self, limit=5):
+        """Get user's top categories for recommendations"""
+        return self.favorite_categories.all()[:limit]
+    
+    def get_top_authors(self, limit=5):
+        """Get user's top authors for recommendations"""
+        return self.favorite_authors.all()[:limit]

@@ -131,7 +131,7 @@
         <!-- Category management (for admins) -->
         {% if user.is_staff %}
         <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
-          <a href="{% url 'admin:index' %}categories/" class="text-sm text-primary-600 hover:text-primary-800 flex items-center">
+          <a href="{% url 'admin:reldemo_category_changelist' %}" class="text-sm text-primary-600 hover:text-primary-800 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
