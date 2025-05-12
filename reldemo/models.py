@@ -92,7 +92,7 @@ class Book(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     language = models.CharField(max_length=30)
-
+    
     class Meta:
         ordering = ['-created_at']
         indexes = [

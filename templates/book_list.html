@@ -2,6 +2,46 @@
 {% block title %}Book Library{% endblock %}
 {% block content %}
 
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
+<!-- Custom styles for status updates -->
+<style>
+  .status-updating {
+    position: relative;
+  }
+  .status-updating::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 10;
+    border-radius: 0.5rem;
+  }
+  
+  /* Improve dropdown positioning */
+  .book-status-dropdown {
+    position: relative;
+  }
+  #book-status-dropdown-content {
+    z-index: 20;
+  }
+  
+  /* Style status buttons for better visibility */
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+</style>
+
 <!-- Page header with actions -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center pb-4 mb-6 border-b border-gray-200 gap-4">
   <div>
@@ -48,25 +88,28 @@
       <div id="filter-dropdown-content"
         class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 p-4">
         <h3 class="font-medium text-gray-700 mb-2">Filter Books</h3>
-        <form id="filter-form" class="space-y-3">
+        <form id="filter-form" class="space-y-3" method="GET" action=".">
+          <!-- Preserve existing sort parameter if present -->
+          {% if request.GET.sort %}
+          <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+          {% endif %}
+          
           <div>
             <label for="category-filter" class="block text-sm text-gray-600">Category</label>
             <select id="category-filter" name="category"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
               <option value="">All Categories</option>
-              <option value="fiction">Fiction</option>
-              <option value="non-fiction">Non-Fiction</option>
-              <option value="science">Science</option>
-              <option value="history">History</option>
-              <option value="biography">Biography</option>
+              {% for category in categories %}
+                <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
             </select>
           </div>
           <div>
             <label for="year-filter" class="block text-sm text-gray-600">Published Year</label>
             <div class="flex space-x-2">
-              <input type="number" id="year-from" name="year_from" placeholder="From"
+              <input type="number" id="year-from" name="year_from" placeholder="From" value="{{ request.GET.year_from|default:'' }}"
                 class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
-              <input type="number" id="year-to" name="year_to" placeholder="To"
+              <input type="number" id="year-to" name="year_to" placeholder="To" value="{{ request.GET.year_to|default:'' }}"
                 class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
             </div>
           </div>
@@ -75,9 +118,9 @@
             <select id="status-filter" name="status"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
               <option value="">All Statuses</option>
-              <option value="read">Read</option>
-              <option value="reading">Currently Reading</option>
-              <option value="to-read">To Read</option>
+              <option value="read" {% if request.GET.status == 'read' %}selected{% endif %}>Read</option>
+              <option value="reading" {% if request.GET.status == 'reading' %}selected{% endif %}>Currently Reading</option>
+              <option value="to-read" {% if request.GET.status == 'to-read' %}selected{% endif %}>To Read</option>
             </select>
           </div>
           <div class="pt-2 flex justify-end space-x-2">
@@ -106,12 +149,30 @@
       </button>
       <div id="sort-dropdown-content" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
         <div class="py-1">
-          <a href="?sort=title" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Title (A-Z)</a>
-          <a href="?sort=-title" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Title (Z-A)</a>
-          <a href="?sort=year" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Year (Oldest first)</a>
-          <a href="?sort=-year" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Year (Newest first)</a>
-          <a href="?sort=author" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Author (A-Z)</a>
-          <a href="?sort=-author" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Author (Z-A)</a>
+          <a href="{% url 'book_list' %}?sort=title{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == 'title' %}bg-gray-100{% endif %}">
+            Title (A-Z)
+          </a>
+          <a href="{% url 'book_list' %}?sort=-title{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == '-title' %}bg-gray-100{% endif %}">
+            Title (Z-A)
+          </a>
+          <a href="{% url 'book_list' %}?sort=year{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == 'year' %}bg-gray-100{% endif %}">
+            Year (Oldest first)
+          </a>
+          <a href="{% url 'book_list' %}?sort=-year{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == '-year' %}bg-gray-100{% endif %}">
+            Year (Newest first)
+          </a>
+          <a href="{% url 'book_list' %}?sort=author{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == 'author' %}bg-gray-100{% endif %}">
+            Author (A-Z)
+          </a>
+          <a href="{% url 'book_list' %}?sort=-author{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.year_from %}&year_from={{ request.GET.year_from }}{% endif %}{% if request.GET.year_to %}&year_to={{ request.GET.year_to }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if request.GET.sort == '-author' %}bg-gray-100{% endif %}">
+            Author (Z-A)
+          </a>
         </div>
       </div>
     </div>
@@ -143,16 +204,64 @@
 
 <!-- Selected categories/tags -->
 <div class="flex flex-wrap gap-2 mb-6" id="active-filters">
-  <!-- These would be dynamically generated based on active filters -->
-  <div
-    class="hidden active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-    Fiction
-    <button type="button" class="ml-1 inline-flex text-blue-500 focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
+  <!-- Active filters will be displayed here -->
+  {% if request.GET.category or request.GET.year_from or request.GET.year_to or request.GET.status or request.GET.sort %}
+    {% if request.GET.category %}
+      {% for category in categories %}
+        {% if category.slug == request.GET.category %}
+          <div class="active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            Category: {{ category.name }}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'category' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-500">✖</a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    
+    {% if request.GET.year_from %}
+      <div class="active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        Year from: {{ request.GET.year_from }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'year_from' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-500">✖</a>
+      </div>
+    {% endif %}
+    
+    {% if request.GET.year_to %}
+      <div class="active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        Year to: {{ request.GET.year_to }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'year_to' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-500">✖</a>
+      </div>
+    {% endif %}
+    
+    {% if request.GET.status %}
+      <div class="active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        Status: {% if request.GET.status == 'read' %}Read{% elif request.GET.status == 'reading' %}Currently Reading{% elif request.GET.status == 'to-read' %}To Read{% endif %}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'status' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-blue-500">✖</a>
+      </div>
+    {% endif %}
+    
+    {% if request.GET.sort %}
+      <div class="active-filter inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+        Sorted by: 
+        {% if request.GET.sort == 'title' %}Title (A-Z)
+        {% elif request.GET.sort == '-title' %}Title (Z-A)
+        {% elif request.GET.sort == 'year' %}Year (Oldest first)
+        {% elif request.GET.sort == '-year' %}Year (Newest first)
+        {% elif request.GET.sort == 'author' %}Author (A-Z)
+        {% elif request.GET.sort == '-author' %}Author (Z-A)
+        {% endif %}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'sort' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-1 text-purple-500">✖</a>
+      </div>
+    {% endif %}
+    
+    <!-- Clear all filters button -->
+    <div class="inline-flex items-center px-3 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200">
+      <a href="{{ request.path }}" class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Clear All
+      </a>
+    </div>
+  {% endif %}
 </div>
 
 <!-- Book selection tools (for batch operations) -->
@@ -189,7 +298,7 @@
 <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {% for book in books %}
   <div
-    class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col transition-transform hover:shadow-lg hover:-translate-y-1">
+    class="book-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col transition-transform hover:shadow-lg hover:-translate-y-1" data-book-id="{{ book.id }}">
     <!-- Book selection checkbox (hidden by default) -->
     <div class="book-checkbox absolute top-2 left-2 hidden">
       <input type="checkbox" name="selected_books" value="{{ book.id }}"
@@ -200,15 +309,15 @@
     <div class="absolute top-2 right-2">
       {% if book.status == 'reading' %}
       <span
-        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
         Reading
       </span>
       {% elif book.status == 'read' %}
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
         Read
       </span>
       {% elif book.status == 'to-read' %}
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+      <span class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
         To Read
       </span>
       {% endif %}
@@ -217,13 +326,13 @@
     <!-- Book cover with overlay for quick actions -->
     <div class="relative h-64 overflow-hidden group">
       {% if book.image_url %}
-      <img src="{{ book.image_url }}" alt="{{ book.title }}"
+      <img src="{{ book.image_url }}" alt="{{ book.title }}" loading="lazy" width="250" height="400"
         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
       {% elif book.image %}
-      <img src="{{ book.image.url }}" alt="{{ book.title }}"
+      <img src="{{ book.image.url }}" alt="{{ book.title }}" loading="lazy" width="250" height="400"
         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
       {% else %}
-      <img src="/static/default.jpg" alt="default"
+      <img src="/static/default.jpg" alt="default" loading="lazy" width="250" height="400"
         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
       {% endif %}
 
@@ -240,7 +349,7 @@
               d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
         </a>
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and user.is_superuser %}
         <a href="{% url 'update_book' book.id %}" class="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
           title="Edit Book">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
@@ -249,6 +358,7 @@
               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
         </a>
+        {% endif %}
         <button type="button" class="toggle-favorite p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
           title="Add to Favorites" data-book-id="{{ book.id }}">
           <svg xmlns="http://www.w3.org/2000/svg"
@@ -265,7 +375,6 @@
               clip-rule="evenodd" />
           </svg>
         </button>
-        {% endif %}
       </div>
     </div>
 
@@ -309,7 +418,7 @@
     </div>
 
     <div class="px-4 py-3 bg-gray-50 flex space-x-2 mt-auto">
-      {% if user.is_authenticated %}
+      {% if user.is_authenticated and user.is_superuser %}
       <a href="{% url 'update_book' book.id %}"
         class="px-3 py-1.5 bg-primary-600 text-white rounded-md text-xs hover:bg-primary-700 transition-colors">Update</a>
       <a href="{% url 'delete_book' book.id %}"
@@ -322,36 +431,34 @@
       {% if user.is_authenticated %}
       <div class="relative ml-auto book-status-dropdown">
         <button id="book-status-toggle-{{ book.id }}"
-          class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-md text-xs hover:bg-gray-300 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-md text-xs hover:bg-gray-300 transition-colors flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
           </svg>
+          <span>Status</span>
         </button>
         <div id="book-status-dropdown-content-{{ book.id }}"
           class="hidden absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg z-10">
           <div class="py-1">
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 update-status"
-              onclick="updateBookStatus({{ book.id }}, 'reading')">
+              data-book-id="{{ book.id }}" data-status="reading">
               <span class="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>
               Currently Reading
             </a>
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 update-status"
-              onclick="updateBookStatus({{ book.id }}, 'read')">
+              data-book-id="{{ book.id }}" data-status="read">
               <span class="inline-block w-3 h-3 rounded-full bg-green-400 mr-2"></span>
               Finished Reading
             </a>
             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 update-status"
-              onclick="updateBookStatus({{ book.id }}, 'to-read')">
+              data-book-id="{{ book.id }}" data-status="to-read">
               <span class="inline-block w-3 h-3 rounded-full bg-blue-400 mr-2"></span>
               Want to Read
             </a>
           </div>
         </div>
       </div>
-
-      
-      
       {% endif %}
     </div>
   </div>
@@ -393,7 +500,7 @@
 <!-- List view (hidden by default) -->
 <div id="list-view" class="hidden space-y-4">
   {% for book in books %}
-  <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
+  <div class="book-card bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg" data-book-id="{{ book.id }}">
     <div class="flex flex-col md:flex-row">
       <!-- Book selection checkbox (hidden by default) -->
       <div class="book-checkbox absolute top-2 left-2 hidden">
@@ -404,11 +511,11 @@
       <!-- Book cover -->
       <div class="md:w-48 h-48 md:h-auto flex-shrink-0">
         {% if book.image_url %}
-        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+        <img src="{{ book.image_url }}" alt="{{ book.title }}" loading="lazy" width="192" height="250" class="w-full h-full object-cover">
         {% elif book.image %}
-        <img src="{{ book.image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover">
+        <img src="{{ book.image.url }}" alt="{{ book.title }}" loading="lazy" width="192" height="250" class="w-full h-full object-cover">
         {% else %}
-        <img src="/static/default.jpg" alt="default" class="w-full h-full object-cover">
+        <img src="/static/default.jpg" alt="default" loading="lazy" width="192" height="250" class="w-full h-full object-cover">
         {% endif %}
       </div>
 
@@ -435,17 +542,17 @@
             <!-- Reading status -->
             {% if book.status == 'reading' %}
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
               Reading
             </span>
             {% elif book.status == 'read' %}
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
               Read
             </span>
             {% elif book.status == 'to-read' %}
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               To Read
             </span>
             {% endif %}
@@ -473,7 +580,7 @@
 
         <!-- Actions -->
         <div class="flex flex-wrap gap-2 mt-3">
-          {% if user.is_authenticated %}
+          {% if user.is_authenticated and user.is_superuser %}
           <a href="{% url 'update_book' book.id %}"
             class="px-3 py-1.5 bg-primary-600 text-white rounded-md text-xs hover:bg-primary-700 transition-colors">Update</a>
           <a href="{% url 'delete_book' book.id %}"
@@ -481,7 +588,7 @@
           {% endif %}
           <a href="{% url 'book_detail' book.id %}"
             class="px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 transition-colors">Read
-            More</a>
+              More</a>
 
           {% if user.is_authenticated %}
           <button type="button"
@@ -534,7 +641,7 @@
 <div class="mt-8 flex justify-center">
   <nav class="inline-flex rounded-md shadow">
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
       class="px-3 py-2 bg-white border border-gray-300 rounded-l-md text-gray-700 hover:bg-gray-50">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -547,11 +654,11 @@
       {% for i in paginator.page_range %}
       {% if page_obj.number == i %}
       <span class="px-3 py-2 bg-primary-50 border border-primary-300 text-primary-700">{{ i }}</span>
-      {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %} <a
-        href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+      {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %} 
+      <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
         class="px-3 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">{{ i }}</a>
-        {% endif %}
-        {% endfor %}
+      {% endif %}
+      {% endfor %}
     </div>
 
     <!-- Mobile pagination info -->
@@ -560,7 +667,7 @@
     </span>
 
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
       class="px-3 py-2 bg-white border border-gray-300 rounded-r-md text-gray-700 hover:bg-gray-50">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -572,26 +679,31 @@
 {% endif %}
 
 <script>
-
 document.addEventListener("DOMContentLoaded", function () {
-    // View toggle functionality
+    // Cache DOM elements
     const viewToggle = document.getElementById("view-toggle");
     const gridView = document.getElementById("grid-view");
     const listView = document.getElementById("list-view");
     const gridIcon = document.querySelector(".grid-icon");
     const listIcon = document.querySelector(".list-icon");
     const viewText = document.querySelector(".view-text");
+    const filterToggle = document.getElementById("filter-toggle");
+    const filterDropdownContent = document.getElementById("filter-dropdown-content");
+    const sortToggle = document.getElementById("sort-toggle");
+    const sortDropdownContent = document.getElementById("sort-dropdown-content");
+    const filterForm = document.getElementById("filter-form");
+    const activeFiltersContainer = document.getElementById("active-filters");
+    
+    // Cache CSRF token for all fetch requests
+    const csrfToken = getCsrfToken();
+    
+    // Create a status update queue to avoid overloading the server
+    let statusUpdateQueue = {};
+    let statusUpdateInProgress = false;
 
+    // View toggle functionality
     if (viewToggle && gridView && listView) {
-        viewToggle.addEventListener("click", function () {
-            const isListView = gridView.classList.toggle("hidden");
-            listView.classList.toggle("hidden");
-            gridIcon.classList.toggle("hidden");
-            listIcon.classList.toggle("hidden");
-            viewText.textContent = isListView ? "Grid View" : "List View";
-            localStorage.setItem("bookViewPreference", isListView ? "list" : "grid");
-        });
-
+        // Load saved preference
         if (localStorage.getItem("bookViewPreference") === "list") {
             gridView.classList.add("hidden");
             listView.classList.remove("hidden");
@@ -599,28 +711,36 @@ document.addEventListener("DOMContentLoaded", function () {
             listIcon.classList.remove("hidden");
             viewText.textContent = "Grid View";
         }
+        
+        // Add event listener with debounce
+        viewToggle.addEventListener("click", debounce(function () {
+            const isListView = gridView.classList.toggle("hidden");
+            listView.classList.toggle("hidden");
+            gridIcon.classList.toggle("hidden");
+            listIcon.classList.toggle("hidden");
+            viewText.textContent = isListView ? "Grid View" : "List View";
+            localStorage.setItem("bookViewPreference", isListView ? "list" : "grid");
+        }, 300));
     }
 
-    // Dropdown functionality
-    const filterToggle = document.getElementById("filter-toggle");
-    const filterDropdownContent = document.getElementById("filter-dropdown-content");
-    const sortToggle = document.getElementById("sort-toggle");
-    const sortDropdownContent = document.getElementById("sort-dropdown-content");
-
+    // Dropdown functionality with event delegation
     if (filterToggle && filterDropdownContent) {
-        filterToggle.addEventListener("click", function () {
+        filterToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
             filterDropdownContent.classList.toggle("hidden");
             if (sortDropdownContent) sortDropdownContent.classList.add("hidden");
         });
     }
 
     if (sortToggle && sortDropdownContent) {
-        sortToggle.addEventListener("click", function () {
+        sortToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
             sortDropdownContent.classList.toggle("hidden");
             if (filterDropdownContent) filterDropdownContent.classList.add("hidden");
         });
     }
-
+    
+    // Close dropdowns when clicking outside
     document.addEventListener("click", function (event) {
         if (filterDropdownContent && !event.target.closest(".filter-dropdown")) {
             filterDropdownContent.classList.add("hidden");
@@ -628,104 +748,241 @@ document.addEventListener("DOMContentLoaded", function () {
         if (sortDropdownContent && !event.target.closest(".sort-dropdown")) {
             sortDropdownContent.classList.add("hidden");
         }
+        if (!event.target.closest(".book-status-dropdown")) {
+            document.querySelectorAll("[id^='book-status-dropdown-content-']").forEach(dropdown => 
+                dropdown.classList.add("hidden")
+            );
+        }
     });
 
     // Filter form functionality
-    const filterForm = document.getElementById("filter-form");
     if (filterForm) {
-        filterForm.addEventListener("submit", function (e) {
+        // Enhanced reset button functionality
+        const resetButton = filterForm.querySelector('button[type="reset"]');
+        if (resetButton) {
+            resetButton.addEventListener("click", function (e) {
+                // Prevent the default reset behavior so we can do our own
+                e.preventDefault();
+                
+                // Clear all form inputs except hidden ones that preserve sorting
+                const inputs = filterForm.querySelectorAll('input:not([type="hidden"]), select');
+                inputs.forEach(input => {
+                    if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+                
+                // Maintain the sort parameter if present
+                const sortParam = new URLSearchParams(window.location.search).get('sort');
+                
+                // Redirect to clear all filters but maintain sorting
+                if (sortParam) {
+                    window.location.href = `?sort=${sortParam}`;
+                } else {
+                    window.location.href = window.location.pathname;
+                }
+            });
+        }
+    }
+
+    // Global click event delegation with debouncing for UI operations
+    document.addEventListener("click", debounce(function(e) {
+        // Handle status toggle buttons
+        const statusToggle = e.target.closest("[id^='book-status-toggle-']");
+        if (statusToggle) {
             e.preventDefault();
-            const formData = new FormData(this);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData.entries()) {
-                if (value) params.append(key, value);
-            }
-            window.location.href = `?${params.toString()}`;
-        });
-
-        filterForm.querySelector('button[type="reset"]').addEventListener("click", function () {
-            document.querySelectorAll(".active-filter").forEach((filter) => filter.classList.add("hidden"));
-        });
-    }
-
-    function initActiveFilters() {
-        const params = new URLSearchParams(window.location.search);
-        const activeFiltersContainer = document.getElementById("active-filters");
-        if (!activeFiltersContainer) return;
-        activeFiltersContainer.innerHTML = "";
-        params.forEach((value, key) => {
-            if (key !== "page" && key !== "q" && value) {
-                const filterTag = document.createElement("div");
-                filterTag.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800";
-                filterTag.innerHTML = `${key}: ${value} <button type="button" class="ml-1 text-blue-500" data-param="${key}">✖</button>`;
-                activeFiltersContainer.appendChild(filterTag);
-            }
-        });
-
-        document.addEventListener("click", function (e) {
-            if (e.target.closest("[data-param]")) {
-                const param = e.target.closest("[data-param]").getAttribute("data-param");
-                const url = new URL(window.location.href);
-                url.searchParams.delete(param);
-                window.location.href = url.toString();
-            }
-        });
-    }
-
-    initActiveFilters();
-
-    // Book status update functionality
-    const toggles = document.querySelectorAll("[id^='book-status-toggle-']");
-
-    toggles.forEach(toggle => {
-        toggle.replaceWith(toggle.cloneNode(true));
-        const newToggle = document.getElementById(toggle.id);
-        newToggle.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const bookId = this.id.replace('book-status-toggle-', '');
+            const bookId = statusToggle.id.replace('book-status-toggle-', '');
             const dropdownContent = document.getElementById(`book-status-dropdown-content-${bookId}`);
+            
+            // Close all other dropdowns first
             document.querySelectorAll("[id^='book-status-dropdown-content-']").forEach(dropdown => {
                 if (dropdown !== dropdownContent) dropdown.classList.add("hidden");
             });
+            
+            // Toggle the current dropdown
             dropdownContent.classList.toggle("hidden");
-        }, { once: true });
-    });
-
-    document.addEventListener("click", function (event) {
-        if (!event.target.closest(".book-status-dropdown")) {
-            document.querySelectorAll("[id^='book-status-dropdown-content-']").forEach(dropdown => dropdown.classList.add("hidden"));
         }
-    });
+        
+        // Handle status update links
+        const updateStatusLink = e.target.closest('.update-status');
+        if (updateStatusLink) {
+            e.preventDefault();
+            const bookId = updateStatusLink.dataset.bookId;
+            const status = updateStatusLink.dataset.status;
+            if (bookId && status) {
+                queueStatusUpdate(bookId, status);
+            }
+        }
+        
+        // Handle favorite toggle
+        const favoriteToggle = e.target.closest('.toggle-favorite');
+        if (favoriteToggle) {
+            e.preventDefault();
+            const bookId = favoriteToggle.dataset.bookId;
+            toggleFavorite(bookId, favoriteToggle);
+        }
+    }, 100));
+    
+    // Create a queue system for status updates to avoid multiple simultaneous requests
+    function queueStatusUpdate(bookId, status) {
+        // Update UI immediately for better responsiveness
+        updateStatusDisplay(bookId, status);
+        
+        // Add to queue
+        statusUpdateQueue[bookId] = status;
+        
+        // Process queue if not already in progress
+        if (!statusUpdateInProgress) {
+            processStatusUpdateQueue();
+        }
+    }
+    
+    // Process the status update queue
+    function processStatusUpdateQueue() {
+        if (Object.keys(statusUpdateQueue).length === 0) {
+            statusUpdateInProgress = false;
+            return;
+        }
+        
+        statusUpdateInProgress = true;
+        
+        // Get the first item from the queue
+        const bookId = Object.keys(statusUpdateQueue)[0];
+        const status = statusUpdateQueue[bookId];
+        
+        // Remove from queue
+        delete statusUpdateQueue[bookId];
+        
+        // Show loading indicator
+        const statusDropdown = document.getElementById(`book-status-dropdown-content-${bookId}`);
+        if (statusDropdown) statusDropdown.classList.add("hidden");
+        
+        // Add a loading class to the book card
+        const bookCards = document.querySelectorAll(`[data-book-id="${bookId}"]`);
+        bookCards.forEach(card => card.classList.add('status-updating'));
+        
+        fetch(`/manage-category/update-book-status/${bookId}/${status}/`, {
+            method: "POST",  // Changed to POST for better semantics
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Remove loading state
+            bookCards.forEach(card => card.classList.remove('status-updating'));
+            
+            // Continue processing queue
+            setTimeout(processStatusUpdateQueue, 50);
+        })
+        .catch(error => {
+            // Remove loading state
+            bookCards.forEach(card => card.classList.remove('status-updating'));
+            console.error("Error updating book status:", error);
+            
+            // Continue processing queue even if there was an error
+            setTimeout(processStatusUpdateQueue, 50);
+        });
+    }
 });
 
-function updateBookStatus(bookId, status) {
-    console.log(`Updating status for book ID: ${bookId} to ${status}`);
-    fetch(`/manage-category/update-book-status/${bookId}/${status}/`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCsrfToken()
+function updateStatusDisplay(bookId, status) {
+    // Find all book cards with this ID
+    const bookCards = document.querySelectorAll(`[data-book-id="${bookId}"]`);
+    
+    // Map status to display text and colors
+    const statusConfig = {
+        'reading': {
+            text: 'Reading',
+            bgClass: 'bg-yellow-100',
+            textClass: 'text-yellow-800'
+        },
+        'read': {
+            text: 'Read',
+            bgClass: 'bg-green-100',
+            textClass: 'text-green-800'
+        },
+        'to-read': {
+            text: 'To Read',
+            bgClass: 'bg-blue-100',
+            textClass: 'text-blue-800'
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status) {
-            alert(`Book status updated to: ${data.status}`);
+    };
+    
+    const config = statusConfig[status] || statusConfig['to-read'];
+    
+    // Loop through each book card
+    bookCards.forEach(card => {
+        // Find status indicators within the card
+        const statusIndicators = card.querySelectorAll('.status-indicator');
+        
+        if (statusIndicators.length > 0) {
+            // Update existing status indicators
+            statusIndicators.forEach(indicator => {
+                indicator.textContent = config.text;
+                // Remove old classes and add new ones
+                indicator.classList.remove('bg-yellow-100', 'bg-green-100', 'bg-blue-100', 'bg-gray-100');
+                indicator.classList.remove('text-yellow-800', 'text-green-800', 'text-blue-800', 'text-gray-800');
+                indicator.classList.add(config.bgClass, config.textClass);
+            });
         } else {
-            console.error("Failed to update status:", data.error);
+            // No status indicator found, try to find the container and create one
+            const statusContainer = card.querySelector('.absolute.top-2.right-2');
+            if (statusContainer) {
+                statusContainer.innerHTML = `
+                <span class="status-indicator inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bgClass} ${config.textClass}">
+                    ${config.text}
+                </span>`;
+            }
         }
-    })
-    .catch(error => console.error("Error updating book status:", error));
+    });
+}
+
+function toggleFavorite(bookId, button) {
+    // Visual feedback before server response
+    const outlineIcon = button.querySelector('svg:not(.text-red-500)');
+    const filledIcon = button.querySelector('svg.text-red-500');
+    
+    if (outlineIcon && filledIcon) {
+        outlineIcon.classList.toggle('hidden');
+        filledIcon.classList.toggle('hidden');
+    }
+    
+    // In a real implementation, you would send this to the server
+    // Example API call would go here
+    console.log(`Toggled favorite for book ID: ${bookId}`);
+    
+    // Update label if there's a text span
+    const label = button.querySelector('span');
+    if (label) {
+        label.textContent = label.textContent.includes('Favorited') ? 'Add to Favorites' : 'Favorited';
+    }
 }
 
 function getCsrfToken() {
-    let csrfToken = null;
-    document.cookie.split(";").forEach(cookie => {
-        let [name, value] = cookie.trim().split("=");
-        if (name === "csrftoken") csrfToken = value;
-    });
-    return csrfToken;
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+}
+
+// Utility function to debounce events
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(context, args);
+        }, wait);
+    };
 }
 </script>
 {% endblock %}

@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import BookSerializer
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_protect
 
 def category_list_view(request):
     filter_type = request.GET.get('filter')  # Get filter from URL
@@ -69,10 +71,28 @@ def recent_book_for_category_list(request):
     serializer = BookSerializer(books, many=True)
     return Response(serializer.data)
 
+@require_http_methods(["GET", "POST"])
+@csrf_protect
 def update_book_status(request, book_id, status):
-
+    """
+    Update the reading status of a book for the current user.
+    Supports both GET (legacy) and POST methods, but POST is preferred for better security.
+    
+    Args:
+        request: The HTTP request
+        book_id: The ID of the book to update
+        status: The new status ('reading', 'read', or 'to-read')
+    
+    Returns:
+        JSON response with status update confirmation
+    """
     book = get_object_or_404(Book, id=book_id)
     book_status, created = BookStatus.objects.get_or_create(user=request.user, book=book)
+    
+    # Validate status
+    if status not in ['reading', 'read', 'to-read']:
+        return JsonResponse({"error": "Invalid status"}, status=400)
+    
     book_status.status = status
     book_status.save()
 

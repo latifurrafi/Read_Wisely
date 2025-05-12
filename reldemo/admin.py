@@ -98,7 +98,7 @@ class CategoryAdmin(ModelAdmin):
     list_display = ('name', 'slug', 'get_books_count')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
-    
+
     def get_books_count(self, obj):
         return obj.books.count()
     get_books_count.short_description = 'Books Count'
@@ -133,7 +133,7 @@ class BookAdmin(ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
     filter_horizontal = ('author', 'categories')
     inlines = [BorrowedBookInline, ReviewInline, BookStatusInline]
-    
+
     fieldsets = (
         (None, {
             'fields': ('title', 'slug', 'author', 'year', 'isbn', 'language')

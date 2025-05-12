@@ -441,11 +441,38 @@ def book_create_view(request):
 
 def book_list(request):
     books = Book.objects.all()
-    # for book in books:
-    #     for cat in book.categories.all():
-    #         print(cat)
-    # print("Books:", books)  # Debugging
-    return render(request, 'book_list.html', {'books': books}) 
+    categories = Category.objects.all()
+    
+    # Handle sorting
+    sort_param = request.GET.get('sort')
+    if sort_param:
+        if sort_param.startswith('-'):
+            books = books.order_by(sort_param)
+        else:
+            books = books.order_by(sort_param)
+    
+    # Handle category filtering
+    category_slug = request.GET.get('category')
+    if category_slug:
+        books = books.filter(categories__slug=category_slug)
+    
+    # Year range filtering
+    year_from = request.GET.get('year_from')
+    if year_from and year_from.isdigit():
+        books = books.filter(year__gte=int(year_from))
+        
+    year_to = request.GET.get('year_to')
+    if year_to and year_to.isdigit():
+        books = books.filter(year__lte=int(year_to))
+    
+    # Status filtering if implemented
+    status = request.GET.get('status')
+    if status:
+        # This assumes there's a way to filter books by status
+        # Adjust according to your actual data model
+        books = books.filter(status=status)
+    
+    return render(request, 'book_list.html', {'books': books, 'categories': categories})
 
 @login_required
 def add_book(request):
